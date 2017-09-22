@@ -33,3 +33,15 @@ getch:
 	move $fp, sp
 
 	sw	a0, 40($fp)
+
+	# restauro callee-saved regs
+	lw	gp, 24(sp)
+	lw	$fp, 28(sp)
+	lw	ra, 32(sp)
+	# destruyo stack frame
+	addu	sp, sp, 40
+	# vuelvo a funcion llamante
+	jr	ra
+
+	.end	getch
+	.size	getch,.-getch
