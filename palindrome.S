@@ -59,10 +59,9 @@ palindrome:
 	.data
 
 buffer_entrada:	.asciiz "xxxxxxxxxxxx"
-ibyte:		.word	3
+ibyte:		.word	10
 offset_entrada:	.word	0
 
 buffer_salida:	.asciiz "xxxxxxxxxxxx"
-obyte:		.word	3
+obyte:		.word	10
 offset_salida:	.word	0
-

@@ -38,10 +38,12 @@ getch:
 	######################## INICIO GETCH ######################
 	# PARAMETROS:
 	# a0: File desciptor de archivo de entrada.
+	# v0: Caracter leido desde el buffer.
+	# v1: 0->EOF, 1->OK, 2->ERROR
 
 	################## DECIDO SI CARGO BUFFER ##################
 	# Si (offset_entrada == 0) => CARGA DE BUFFER DESDE ARCHIVO.
-
+	# 		      Sino => LEER CARACTER DESDE EL BUFFER
 	lw 	t4, offset_entrada
 	bnez 	t4, leer_caracter
 	nop
@@ -50,13 +52,18 @@ getch:
 	li 	v0, SYS_read		#v0: Nombre syscall.
 	#li 	a0, FILE_DESCRIPTOR	#a0: File descriptor.
 	la 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos.
-	lw 	a2, ibyte		#a2 = ibyte: Cantidad de bytes a leer.
-	syscall				#TODO: Verificar A3
+	lw 	a2, ibyte		#a2: Cantidad de bytes a leer.
+	syscall				#TODO: Verificar A3 cantidad leida
+
+	###################### CONTROL DE EOF ######################
+	# Si v0 es cero entonces se alcanzo el fin de archivo
+	# y se devuelve el numero 256.
+	beqz v0, eof
 
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
 	# Si el buffer no se carga completamente reduzco su tamanio
-	# a la cantidad de caracteres leidos de disco. Esto ocurre
-	# solo en la ultima lectura desde disco.
+	# a la cantidad de caracteres leidos de disco. Esto puede
+	# ocurrir solo en la ultima lectura desde disco.
 
 	lw  	t5, ibyte		# t5: Longitud buffer.
 	beq 	t5, v0, leer_caracter	# v0: Cantidad de caracteres leidos
@@ -90,6 +97,10 @@ leer_caracter:
 	bne 	t8, t7, fin
 	nop
 	sw 	zero, offset_entrada	# Reseteo de offset.
+	j	fin
+
+eof:	li 	v0, 256			# devuelvo 256 en caso de
+					# alcanzar eof
 fin:
 	########################## FIN GETCH #######################
 	# restauro callee-saved regs

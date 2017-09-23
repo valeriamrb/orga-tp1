@@ -20,18 +20,10 @@ int main(void)
 	FILE* archivo_salida;
 	archivo_salida = fopen("salida","w");
 
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
-	v0 = getch(fileno(archivo_entrada));
-	printf("%c\n", v0);
+	while ((v0 = getch(fileno(archivo_entrada))) != 256)
+		printf("%c\n", v0);
+
+	if (v0 == 256) printf("FIN DE ARCHIVO\n");
 
 	//putch(fileno(archivo_salida) ,'a');
 
@@ -39,4 +31,3 @@ int main(void)
 	fclose(archivo_salida);
 	return 0;
 }
-
