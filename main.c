@@ -22,6 +22,16 @@ int main(void)
 
 	v0 = getch(fileno(archivo_entrada));
 	printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
 
 	//putch(fileno(archivo_salida) ,'a');
 
@@ -29,3 +39,4 @@ int main(void)
 	fclose(archivo_salida);
 	return 0;
 }
+

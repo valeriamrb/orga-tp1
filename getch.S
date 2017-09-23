@@ -38,32 +38,48 @@ getch:
 	###########################################################
 
 	# a0: file desciptor de archivo de entrada
+	# a2: ibyte
 
+	lw  t4, offset_entrada
+	bnez t4, leer_c
+	nop
 
 	############# CARGA DE BUFFER DESDE ARCHIVO ############
 	li v0, SYS_read
 	#li a0, FILE_DESCRIPTOR
 	la a1, buffer_entrada
 	#puntero al buffer donde guardar
-	lw a2, ibyte		#ibytes: cantidad de bytes a leer
+	lw a2, ibyte		#ibyte: cantidad de bytes a leer
 	syscall			#TODO: Verificar A3
 	############# FIN CARGA DE BUFFER DESDE ARCHIVO ############
 
+	lw t5, ibyte
+	blt v0, t5, ultbuff
+	j leer_c
 
+ultbuff:
+	sw v0, ibyte
 
 	############# LEER CARACTER DESDE EL BUFFER ############
+leer_c:
 	la t0, buffer_entrada
 	lw t1, offset_entrada
-	add t3, t0, t1		#t3: puntero de lectura de buffer
+	add t3, t0, t1		#t3 = buffer_entrada + offset_entrada = puntero de lectura de buffer
 	lb v0, 0(t3)		#devuelvo el caracter leido del buffer
 	############# FIN LEER CARACTER DESDE EL BUFFER ############
-	#TODO: HACER LOOP!!!
 
 	############## AVANCE DE OFFSET #############
 	lw t0, offset_entrada
-	add t0, t0, 1		#TODO: Verificar que no me salgo del buffer
+	add t0, t0, 1
 	sw t0, offset_entrada
 	############## FIN AVANCE DE OFFSET #############
+
+	lw t8, offset_entrada
+	lw t7, ibyte
+	bne t8, t7, fin
+	nop
+	sw zero, offset_entrada
+fin:
 
 	###########################################################
 	# restauro callee-saved regs
@@ -77,3 +93,4 @@ getch:
 
 	.end	getch
 	.size	getch,.-getch
+
