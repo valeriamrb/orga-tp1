@@ -8,11 +8,17 @@
 .abicalls
 .align 2
 
-.globl Palindrome
-.ent Palindrome
+.globl palindrome
+.ent palindrome
 
-Palindrome:
-	#debugging info: descripcion del stack frame	
+.globl buffer_entrada
+.globl ibyte
+
+.globl buffer_salida
+.globl obyte
+
+palindrome:
+	#debugging info: descripcion del stack frame
 	.frame $fp, 40, ra		# ver que a lo mejor 40 no es un buen numero
 
 	#bloque para codigo pic
@@ -24,7 +30,7 @@ Palindrome:
 	subu	sp, sp, 40
 
 	#bloque para codigo pic
-	.cpstore 24
+	.cprestore 24
 
 	# salvando el callee
 	sw	$fp, 28(sp)
@@ -45,3 +51,11 @@ Palindrome:
 
 	.end	palindrome
 	.size	palindrome,.-palindrome
+
+	.data
+
+buffer_entrada:	.asciiz "xxxxxxxxxxxxxx"
+ibyte:		.word	7
+
+buffer_salida:	.asciiz "xxxxxxxxxxxxxx"
+obyte:		.word	7
