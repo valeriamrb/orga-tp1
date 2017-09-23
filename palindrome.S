@@ -13,9 +13,11 @@
 
 .globl buffer_entrada
 .globl ibyte
+.globl offset_entrada
 
 .globl buffer_salida
 .globl obyte
+.globl offset_salida
 
 palindrome:
 	#debugging info: descripcion del stack frame
@@ -56,6 +58,8 @@ palindrome:
 
 buffer_entrada:	.asciiz "xxxxxxxxxxxxxx"
 ibyte:		.word	7
+offset_entrada:	.word	0
 
 buffer_salida:	.asciiz "xxxxxxxxxxxxxx"
 obyte:		.word	7
+offset_salida:	.word	0

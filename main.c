@@ -20,10 +20,10 @@ int main(void)
 	FILE* archivo_salida;
 	archivo_salida = fopen("salida","w");
 
-	//v0 = getch(fileno(archivo_entrada));
-	//printf("%c\n", v0);
+	v0 = getch(fileno(archivo_entrada));
+	printf("%c\n", v0);
 
-	putch(fileno(archivo_salida) ,'a');
+	//putch(fileno(archivo_salida) ,'a');
 
 	fclose(archivo_entrada);
 	fclose(archivo_salida);

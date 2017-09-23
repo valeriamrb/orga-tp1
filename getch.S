@@ -39,15 +39,31 @@ getch:
 
 	# a0: file desciptor de archivo de entrada
 
+
+	############# CARGA DE BUFFER DESDE ARCHIVO ############
 	li v0, SYS_read
 	#li a0, FILE_DESCRIPTOR
-	la a1, buffer_entrada	#puntero al buffer donde guardar
+	la a1, buffer_entrada
+	#puntero al buffer donde guardar
 	lw a2, ibyte		#ibytes: cantidad de bytes a leer
 	syscall			#TODO: Verificar A3
+	############# FIN CARGA DE BUFFER DESDE ARCHIVO ############
 
-	lb v0, buffer_entrada
 
-	#lw v0, ibyte
+
+	############# LEER CARACTER DESDE EL BUFFER ############
+	la t0, buffer_entrada
+	lw t1, offset_entrada
+	add t3, t0, t1		#t3: puntero de lectura de buffer
+	lb v0, 0(t3)		#devuelvo el caracter leido del buffer
+	############# FIN LEER CARACTER DESDE EL BUFFER ############
+	#TODO: HACER LOOP!!!
+
+	############## AVANCE DE OFFSET #############
+	lw t0, offset_entrada
+	add t0, t0, 1		#TODO: Verificar que no me salgo del buffer
+	sw t0, offset_entrada
+	############## FIN AVANCE DE OFFSET #############
 
 	###########################################################
 	# restauro callee-saved regs
@@ -61,6 +77,3 @@ getch:
 
 	.end	getch
 	.size	getch,.-getch
-
-; 	.data
-; buffer: .word 0
