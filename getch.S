@@ -32,14 +32,13 @@ getch:
 
 	move 	$fp, sp
 
-	#argumento
-	sw	a0, 40($fp)
-
 	######################## INICIO GETCH ######################
 	# PARAMETROS:
+	sw	a0, 40($fp)
 	# a0: File desciptor de archivo de entrada.
-	# v0: Caracter leido desde el buffer.
-	# v1: 0->EOF, 1->OK, 2->ERROR
+	# RETORNO:
+	# v0: Caracter leido desde el buffer. Si se alcanza un EOF
+	# se devuelve un 256.
 
 	################## DECIDO SI CARGO BUFFER ##################
 	# Si (offset_entrada == 0) => CARGA DE BUFFER DESDE ARCHIVO.
@@ -59,6 +58,7 @@ getch:
 	# Si v0 es cero entonces se alcanzo el fin de archivo
 	# y se devuelve el numero 256.
 	beqz v0, eof
+	nop
 
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
 	# Si el buffer no se carga completamente reduzco su tamanio
@@ -97,7 +97,8 @@ leer_caracter:
 	bne 	t8, t7, fin
 	nop
 	sw 	zero, offset_entrada	# Reseteo de offset.
-	j	fin
+	b	fin
+	nop
 
 eof:	li 	v0, 256			# devuelvo 256 en caso de
 					# alcanzar eof
