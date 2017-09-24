@@ -58,7 +58,7 @@ guardar_c:
 	lw t8, offset_salida
 	lw t7, obyte
 	blt t8, t7, fin #chequeo si el buffer esta lleno para copiarlo a archivo_salida.
-	sw zero, offset_entrada #si el buffer se lleno reseteo el offset.
+	sw zero, offset_salida #si el buffer se lleno reseteo el offset.
 
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write

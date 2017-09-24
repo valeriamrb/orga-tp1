@@ -63,6 +63,7 @@ palindrome:
 	sw 	v0, buffer_entrada	# Guardo puntero a memoria alocada
 					# en variable global
 
+
 	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
 	########### Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
 loop:
@@ -75,6 +76,7 @@ loop:
 	beq	v0, t1, fin
 	nop
 
+	
 	# Llamo a funcion putch y escribo caracter en archivo de salida
 	lw 	a0, 48($fp)
 	move 	a1, v0
