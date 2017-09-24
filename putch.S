@@ -36,24 +36,39 @@ putch:
 
 	###########################################################
 
-	# a0: file desciptor de archivo de entrada
+	# a0: file desciptor de archivo de salida
 	# a1: Caracter a guardar en archivo salida
 
+	lw t4, offset_salida
 
-	sb a1, buffer_salida
+	############# GUARDAR CARACTER EN EL BUFFER ############
+guardar_c:
+	la t0, buffer_salida
+	lw t1, offset_salida
+	add t3, t0, t1		#t3 = buffer_entrada + offset_salida = puntero de escritura de buffer
+	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
+	############# FIN GUARDAR CARACTER EN EL BUFFER ############
 
+	############## AVANCE DE OFFSET #############
+	lw t0, offset_salida
+	add t0, t0, 1
+	sw t0, offset_salida
+	############## FIN AVANCE DE OFFSET #############
 
+	lw t8, offset_salida
+	lw t7, obyte
+	blt t8, t7, fin #chequeo si el buffer esta lleno para copiarlo a archivo_salida.
+	sw zero, offset_entrada #si el buffer se lleno reseteo el offset.
+
+	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
 	#li a0, FILE_DESCRIPTOR
-	la a1, buffer_salida	#puntero al buffer donde guardar  // TODO: Perdimos a0
-	lw a2, obyte		#ibytes: cantidad de bytes a leer
+	la a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
+	lw a2, obyte		#obytes: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
-	#lb v0, buffer_salida
-	#lw v0, ibyte
-
-	###########################################################
-
+	###########FIN CARGAR ARCHIVO DESDE BUFFER###################
+fin:
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)
