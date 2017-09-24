@@ -69,12 +69,13 @@ palindrome:
 	lw 	t4, 52($fp)
 	sw 	t4, obyte		# Guardo tamanio buffer entrada
 	 				# en variable global
-					
+
 	lw 	a3, 52($fp)		# a3: Tamanio de buffer en bytes
 	jal 	mymalloc
 
 	sw 	v0, buffer_salida	# Guardo puntero a memoria alocada
 					# en variable global
+
 
 	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
 

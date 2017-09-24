@@ -9,6 +9,7 @@
 int getch(int ifd);
 int putch(int ofd, int caracter);
 int palindrome(int ifd, int ibytes, int ofd, int obytes);
+int esCaracterValido(int c);
 
 int main(void)
 {
@@ -19,8 +20,17 @@ int main(void)
 
 	FILE* archivo_salida;
 	archivo_salida = fopen("salida","w");
-
-	palindrome(fileno(archivo_entrada), 16, fileno(archivo_salida), 16);
+	int res = esCaracterValido(97);
+	printf("%d\n", res);
+	res = esCaracterValido((int)'\'');
+	printf("%d\n", res);
+	res = esCaracterValido((int)'-');
+	printf("%d\n", res);
+	res = esCaracterValido((int)'_');
+	printf("%d\n", res);
+	res = esCaracterValido(199);
+	printf("%d\n", res);
+	//palindrome(fileno(archivo_entrada), 16, fileno(archivo_salida), 16);
 
 	// while ((v0 = getch(fileno(archivo_entrada))) != 256)
 	// 	printf("%c\n", v0);
