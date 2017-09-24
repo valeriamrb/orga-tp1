@@ -49,7 +49,7 @@ getch:
 
 	############### CARGA DE BUFFER DESDE ARCHIVO ##############
 	li 	v0, SYS_read		#v0: Nombre syscall.
-	#li 	a0, FILE_DESCRIPTOR	#a0: File descriptor.
+	lw 	a0, 40($fp)		#a0: File descriptor.
 	lw 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos. #TODO: Cambio por LW
 	lw 	a2, ibyte		#a2: Cantidad de bytes a leer.
 	syscall				#TODO: Verificar A3 cantidad leida

@@ -8,7 +8,7 @@
 
 int getch(int ifd);
 int putch(int ofd, int caracter);
-int palindrome(int ifd, int ibytes);
+int palindrome(int ifd, int ibytes, int ofd, int obytes);
 
 int main(void)
 {
@@ -20,7 +20,7 @@ int main(void)
 	FILE* archivo_salida;
 	archivo_salida = fopen("salida","w");
 
-	palindrome(fileno(archivo_entrada), 16);
+	palindrome(fileno(archivo_entrada), 16, fileno(archivo_salida), 16);
 
 	// while ((v0 = getch(fileno(archivo_entrada))) != 256)
 	// 	printf("%c\n", v0);

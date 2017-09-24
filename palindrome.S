@@ -44,8 +44,13 @@ palindrome:
 	# PARAMETROS:
 	sw	a0, 40($fp)
 	sw	a1, 44($fp)
+	sw	a2, 48($fp)
+	sw	a3, 52($fp)
+
 	# a0: File desciptor de archivo de entrada.
 	# a1: Tamanio en bytes del buffer de entrada.
+	# a2: File desciptor de archivo de salida.
+	# a3: Tamanio en bytes del buffer de salida.
 	# RETORNO:
 
 	################ CREO EL BUFFER DE ENTRADA #################
@@ -58,11 +63,11 @@ palindrome:
 	sw 	v0, buffer_entrada	# Guardo puntero a memoria alocada
 					# en variable global
 
-	#### MUESTRO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA ###
+	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
+	########### Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
 loop:
 	# Llamo a funcion getch y recibo caracter en v0
-	lw 	t0, 40($fp)
-	move 	a0, t0
+	lw 	a0, 40($fp)
 	jal 	getch
 
 	# Si v0 == 256 entonces termina el programa
@@ -70,14 +75,13 @@ loop:
 	beq	v0, t1, fin
 	nop
 
-	# Imprimo caracter por pantalla
-	sb	v0, caracter
-	li 	v0, SYS_write
-	li 	a0, 1		# stdout
-	la 	a1, caracter	# Direccion conde leer caracter
-	li 	a2, 1		# Cantidad de bytes a escribir
-	syscall			# TODO: Verificar A3
-	b	loop		# jump to loop
+	# Llamo a funcion putch y escribo caracter en archivo de salida
+	lw 	a0, 48($fp)
+	move 	a1, v0
+	jal 	putch
+
+	# Nueva iteracion
+	b	loop
 	nop
 
 fin:
@@ -105,8 +109,6 @@ buffer_entrada:	.word	0	#Almacena puntero a buffer de entrada.
 ibyte:		.word	1	#Almacena longitud de buffer en bytes.
 offset_entrada:	.word	0	#Puntero al proximo caracter del buffer a leer.
 
-buffer_salida:	.asciiz "xxxxxxxxxxxxxxxx"
-obyte:		.word	16
+buffer_salida:	.asciiz "xxxxxxxxxxxxx"
+obyte:		.word	10
 offset_salida:	.word	0
-
-caracter: 	.byte 	120
