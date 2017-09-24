@@ -38,12 +38,10 @@ flush:
 
 	# a0: file desciptor de archivo de salida
 
-	lw t4, offset_salida
-
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
-	#li a0, FILE_DESCRIPTOR
-	la a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
+	lw a0, 40($fp)
+	lw a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
 	lw a2, offset_salida		#offset_salida: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 

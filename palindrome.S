@@ -64,7 +64,20 @@ palindrome:
 					# en variable global
 
 
+	################ CREO EL BUFFER DE SALIDA #################
+
+	lw 	t4, 52($fp)
+	sw 	t4, obyte		# Guardo tamanio buffer entrada
+	 				# en variable global
+					
+	lw 	a3, 52($fp)		# a3: Tamanio de buffer en bytes
+	jal 	mymalloc
+
+	sw 	v0, buffer_salida	# Guardo puntero a memoria alocada
+					# en variable global
+
 	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
+
 	########### Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
 loop:
 	# Llamo a funcion getch y recibo caracter en v0
@@ -76,8 +89,10 @@ loop:
 	beq	v0, t1, fin
 	nop
 
-	
+
 	# Llamo a funcion putch y escribo caracter en archivo de salida
+
+
 	lw 	a0, 48($fp)
 	move 	a1, v0
 	jal 	putch
@@ -87,6 +102,9 @@ loop:
 	nop
 
 fin:
+	lw 	a0, 48($fp)
+	jal 	flush
+
 	############### ELIMINO EL BUFFER DE ENTRADA ###############
 	lw 	a0, buffer_entrada
 	jal 	myfree
@@ -111,6 +129,6 @@ buffer_entrada:	.word	0	#Almacena puntero a buffer de entrada.
 ibyte:		.word	1	#Almacena longitud de buffer en bytes.
 offset_entrada:	.word	0	#Puntero al proximo caracter del buffer a leer.
 
-buffer_salida:	.asciiz "xxxxxxxxxxxxx"
-obyte:		.word	10
+buffer_salida:	.word 	0
+obyte:		.word	1
 offset_salida:	.word	0

@@ -33,17 +33,16 @@ putch:
 	move $fp, sp
 
 	sw	a0, 40($fp)
+	sw	a1, 44($fp)
 
 	###########################################################
 
 	# a0: file desciptor de archivo de salida
 	# a1: Caracter a guardar en archivo salida
 
-	lw t4, offset_salida
-
 	############# GUARDAR CARACTER EN EL BUFFER ############
 guardar_c:
-	la t0, buffer_salida
+	lw t0, buffer_salida
 	lw t1, offset_salida
 	add t3, t0, t1		#t3 = buffer_entrada + offset_salida = puntero de escritura de buffer
 	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
@@ -58,12 +57,14 @@ guardar_c:
 	lw t8, offset_salida
 	lw t7, obyte
 	blt t8, t7, fin #chequeo si el buffer esta lleno para copiarlo a archivo_salida.
+	nop
+
 	sw zero, offset_salida #si el buffer se lleno reseteo el offset.
 
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
-	#li a0, FILE_DESCRIPTOR
-	la a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
+	lw a0, 40($fp)
+	lw a1, buffer_salida	#a1: Puntero donde guardar datos leidos.
 	lw a2, obyte		#obytes: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
