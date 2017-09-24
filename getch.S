@@ -50,7 +50,7 @@ getch:
 	############### CARGA DE BUFFER DESDE ARCHIVO ##############
 	li 	v0, SYS_read		#v0: Nombre syscall.
 	#li 	a0, FILE_DESCRIPTOR	#a0: File descriptor.
-	la 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos.
+	lw 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos. #TODO: Cambio por LW
 	lw 	a2, ibyte		#a2: Cantidad de bytes a leer.
 	syscall				#TODO: Verificar A3 cantidad leida
 
@@ -73,7 +73,7 @@ getch:
 
 leer_caracter:
 	############### LEER CARACTER DESDE EL BUFFER ##############
-	la 	t0, buffer_entrada	# t0: Puntero al inicio del buffer.
+	lw 	t0, buffer_entrada	# t0: Puntero al inicio del buffer.  TODO: Cambio por LW
 	lw 	t1, offset_entrada	# t1: Offset en bytes en el buffer.
 	add 	t3, t0, t1		# t3: Puntero de lectura de buffer.
 	lb 	v0, 0(t3)		# v0: Devuelvo el caracter leido

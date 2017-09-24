@@ -48,7 +48,17 @@ palindrome:
 	# a1: Tamanio en bytes del buffer de entrada.
 	# RETORNO:
 
-	######### MUESTRO TODOS LOS CARACTERES EN ARCHIVO ##########
+	################ CREO EL BUFFER DE ENTRADA #################
+	sw 	a1, ibyte		# Guardo tamanio buffer entrada
+	 				# en variable global
+
+	lw 	a0, 44($fp)		# a0: Tamanio de buffer en bytes
+	jal 	mymalloc
+
+	sw 	v0, buffer_entrada	# Guardo puntero a memoria alocada
+					# en variable global
+
+	#### MUESTRO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA ###
 loop:
 	# Llamo a funcion getch y recibo caracter en v0
 	lw 	t0, 40($fp)
@@ -71,6 +81,9 @@ loop:
 	nop
 
 fin:
+	############### ELIMINO EL BUFFER DE ENTRADA ###############
+	lw 	a0, buffer_entrada
+	jal 	myfree
 
 	####################### FIN PALINDROME #####################
 
@@ -88,9 +101,9 @@ fin:
 
 	.data
 
-buffer_entrada:	.asciiz "xxxxxxxxxxxxxxxx"
-ibyte:		.word	16
-offset_entrada:	.word	0
+buffer_entrada:	.word	0	#Almacena puntero a buffer de entrada.
+ibyte:		.word	1	#Almacena longitud de buffer en bytes.
+offset_entrada:	.word	0	#Puntero al proximo caracter del buffer a leer.
 
 buffer_salida:	.asciiz "xxxxxxxxxxxxxxxx"
 obyte:		.word	16
