@@ -32,33 +32,44 @@ descargarPalabra:
 
 	move $fp, sp
 
-	sw	a0, 40($fp)
 
-	###########################################################
+	##################### ARGUMENTOS #######################
+	sw	a0, 40($fp)	# a0:File desciptor de archivo de salida.
 
 	############# GUARDAR CARACTER EN EL BUFFER ############
-	# t0: puntero al primer caracter del buffer de procesamiento
+	# t0: puntero al primer caracter del buffser de procesamiento
 	# t1: puntero al ultimo caracter del buffer de procesamiento
 	lw t0, buffer_procesamiento
-	lw t1, buffer_procesamiento
-	lw t2, offset_procesamiento
-	sub t2, t2, 1	# TODO: Veeer
-	add t1, t1, t2
+	lw t1, offset_procesamiento
+	sub t1, t1, 1	# TODO: ver
+	add t1, t1, t0
 loop:
-	# # Llamo a funcion putch y escribo caracter en archivo de salida
-	 lw 	a0, 40($fp)	# a0: file descriptor archivo salida
-	 lb 	a1, 0(t0)	# a1: caracter a guardar
-	 jal 	putch
+	# Llamo a funcion putch y escribo caracter en archivo de salida
+	lw 	a0, 40($fp)	# a0: file descriptor archivo salida
+	lb 	a1, 0(t0)	# a1: caracter a guardar
+
+	# respaldo t0 y t1 antes de llamar a putch
+	sw t0, 16($fp)
+	sw t1, 20($fp)
+
+	# Guardo caracter en buffer de salida
+	jal 	putch
+
+	# restauro t0 y t1
+	lw t0, 16($fp)
+	lw t1, 20($fp)
 
 	############## AVANCE DE OFFSET #############
 	add t0, t0, 1
-	############## FIN AVANCE DE OFFSET #############
 
-
-	ble t0, t1, loop # TODO :ver si ble es menor o igual
+	############## LOOPEO MIENTRAS QUE EL PUNTERO #############
+	############ DE LECTURA NO SE SALGA DEL BUFFER ############
+	ble t0, t1, loop
 	nop
 
 fin:
+	sw zero, offset_procesamiento	# TODO: ver
+
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)
@@ -70,3 +81,5 @@ fin:
 
 	.end	descargarPalabra
 	.size	descargarPalabra,.-descargarPalabra
+
+	.rdata

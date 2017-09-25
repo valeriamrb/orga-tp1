@@ -32,15 +32,12 @@ putchProcesamiento:
 
 	move $fp, sp
 
-	sw	a0, 40($fp)
-	sw	a1, 44($fp)
+	####################### ARGUMENTOS ######################
+	sw	a0, 40($fp)	# a0: puntero al buffer de procesamiento
+	sw	a1, 44($fp)	# a1: Caracter a guardar en buffer
 
-	###########################################################
+	# t3: puntero de escritura de buffer de procesamiento
 
-	# a0: puntero al buffer de procesamiento
-	# a1: Caracter a guardar en buffer
-
-	# t3: puntero de escritura de buffer de proe
 	############# GUARDAR CARACTER EN EL BUFFER DE PROCESAMIENTO ############
 guardar_c:
 	lw t0, buffer_procesamiento
