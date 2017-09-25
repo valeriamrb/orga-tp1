@@ -44,7 +44,7 @@ putch:
 guardar_c:
 	lw t0, buffer_salida
 	lw t1, offset_salida
-	add t3, t0, t1		#t3 = buffer_entrada + offset_salida = puntero de escritura de buffer
+	add t3, t0, t1		#t3 = buffer_salida + offset_salida = puntero de escritura de buffer
 	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
 	############# FIN GUARDAR CARACTER EN EL BUFFER ############
 

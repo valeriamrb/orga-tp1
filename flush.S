@@ -32,17 +32,13 @@ flush:
 
 	move $fp, sp
 
-	sw	a0, 40($fp)
-
-	###########################################################
-
-	# a0: file desciptor de archivo de salida
+	sw	a0, 40($fp)	# a0: File desciptor de archivo de salida.
 
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
-	lw a0, 40($fp)
+	lw a0, 40($fp)		# a0: File desciptor de archivo de salida.
 	lw a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
-	lw a2, offset_salida		#offset_salida: cantidad de bytes a guardar
+	lw a2, offset_salida	#offset_salida: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
 	###########FIN CARGAR ARCHIVO DESDE BUFFER###################

@@ -19,6 +19,9 @@
 .globl obyte
 .globl offset_salida
 
+.globl buffer_procesamiento
+.globl offset_procesamiento
+
 palindrome:
 	#debugging info: descripcion del stack frame
 	.frame 	$fp, 40, ra		# ver que a lo mejor 40 no es un buen numero
@@ -70,44 +73,88 @@ palindrome:
 	sw 	t4, obyte		# Guardo tamanio buffer entrada
 	 				# en variable global
 
-	lw 	a3, 52($fp)		# a3: Tamanio de buffer en bytes
+	lw 	a0, 52($fp)		# a3: Tamanio de buffer en bytes
 	jal 	mymalloc
 
 	sw 	v0, buffer_salida	# Guardo puntero a memoria alocada
 					# en variable global
 
+	################ CREO EL BUFFER DE PROCESAMIENTO #################
+	li 	a0, 100		# a0: Tamanio de buffer en bytes
+	jal 	mymalloc
 
+	sw 	v0, buffer_procesamiento	# Guardo puntero a memoria alocada
+					# en variable global
 	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
 
 	########### Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
 loop:
 	# Llamo a funcion getch y recibo caracter en v0
-	lw 	a0, 40($fp)
-	jal 	getch
+	lw 	a0, 40($fp)	#Cargo flie descriptor
+	jal 	getch		#Recibo caracter leido en v0
+
+	# Backapeo el caracter que recibi en 16($fp)
+	sw v0, 16($fp)	#TODO: lta16 guarda v0
 
 	# Si v0 == 256 entonces termina el programa
 	li 	t1, 256
 	beq	v0, t1, fin
 	nop
 
+	# Verifico si el caracter es valido
+	lw a0, 16($fp)		#a0: caracter a comprobar
+	jal esCaracterValido
+	beqz v0, esInvalido	#v0: valido=1 invalido=0
+	nop
 
-	# Llamo a funcion putch y escribo caracter en archivo de salida
-
-
-	lw 	a0, 48($fp)
-	move 	a1, v0
-	jal 	putch
+	# Guardo caracter en buffer_procesamiento
+	lw 	a0, buffer_procesamiento	# a0: puntero al buffer de procesamiento
+	lw 	a1, 16($fp)			# a1: caracter a guardar
+	jal 	putchProcesamiento
 
 	# Nueva iteracion
 	b	loop
 	nop
 
+esInvalido:
+	#Si el buffer no esta vacio, llamo a esCapicua:
+	lw t5, offset_procesamiento
+	beqz t5, loop #TODO: controlar errores
+	nop
+
+	jal esCapicua
+	# chequeo v0
+	beqz v0 , resetOffsetProcesamiento
+	nop
+	#Si es capicua llama a descargar palabra
+	lw a0, 48($fp)
+	jal descargarPalabra
+
+resetOffsetProcesamiento:
+
+	sw  zero, offset_procesamiento
+
+	#loopea cargando la siguiente palabra en el buffer de procesamiento
+	b loop
+	nop
+
 fin:
-	lw 	a0, 48($fp)
+	lw a0, 48($fp)
+	jal descargarPalabra
+	#
+	lw 	a0, 48($fp)	# a0: File desciptor de archivo de salida.
 	jal 	flush
 
 	############### ELIMINO EL BUFFER DE ENTRADA ###############
 	lw 	a0, buffer_entrada
+	jal 	myfree
+
+	############### ELIMINO EL BUFFER DE SALIDA ###############
+	lw 	a0, buffer_salida
+	jal 	myfree
+
+	############### ELIMINO EL BUFFER DE PROCESAMIENTO ###############
+	lw 	a0, buffer_procesamiento
 	jal 	myfree
 
 	####################### FIN PALINDROME #####################
@@ -133,3 +180,6 @@ offset_entrada:	.word	0	#Puntero al proximo caracter del buffer a leer.
 buffer_salida:	.word 	0
 obyte:		.word	1
 offset_salida:	.word	0
+
+buffer_procesamiento: .word 0
+offset_procesamiento: .word 0
