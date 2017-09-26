@@ -56,9 +56,8 @@ esCaracterValido:
 	li t7, 64
 	li t8, 91
 
-	#esta contemplado el caracter 95 que quedo en el igual del c
 	#Validar Letras Minusculas
-	blt a0, t1, ValidarNumeros
+	ble a0, t1, ValidarNumeros
 	nop
 	blt a0, t2, esValido
 	nop
@@ -70,7 +69,7 @@ ValidarNumeros:
 	nop
 
 ValidarMayusculas:
-	blt a0, t7, ValidarGuiones
+	ble a0, t7, ValidarGuiones
 	nop
 	blt a0, t8, esValido
 	nop
