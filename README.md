@@ -8,3 +8,7 @@ Prueba que falla (-ne es para no dejar salto de linea al final aunque en este te
 
 entrada: echo -ne 'asd ddd as@atata@ddd' > entrada
 salida: ddd
+
+FALTA PASAR TEST :
+esperada03
+toma apostrofe invertido y apostrofes como caracteres validos

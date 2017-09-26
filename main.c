@@ -16,10 +16,10 @@ int main(void)
 	// int n;
 	// int v0;
 	FILE* archivo_entrada;
-	archivo_entrada = fopen("entrada","r");
+	archivo_entrada = fopen("entrada04","r");
 
 	FILE* archivo_salida;
-	archivo_salida = fopen("salida","w");
+	archivo_salida = fopen("salida04","w");
 	// int res = esCaracterValido(97);
 	// printf("%d\n", res);
 	// res = esCaracterValido((int)'\'');

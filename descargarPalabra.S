@@ -68,6 +68,12 @@ loop:
 	nop
 
 fin:
+	############## AGREGO CARCTER DE FIN DE LINEA #############
+	lw 	a0, 40($fp)	# a0: file descriptor archivo salida
+	li 	a1, 10		# a1: caracter a guardar
+	jal putch
+
+	######### RESETEO OFFSET DE PROCESAMIENTO A CERO ##########
 	sw zero, offset_procesamiento	# TODO: ver
 
 	# restauro callee-saved regs
