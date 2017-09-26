@@ -33,25 +33,63 @@ putchProcesamiento:
 	move $fp, sp
 
 	####################### ARGUMENTOS ######################
+	# Descripcion:
+	# Coloca un caracter en el buffer de procesamiento.
+
+	#Arguemetnos:
 	sw	a0, 40($fp)	# a0: puntero al buffer de procesamiento
 	sw	a1, 44($fp)	# a1: Caracter a guardar en buffer
 
-	# t3: puntero de escritura de buffer de procesamiento
+	# Retorno:
+	# v0 : Devuelve 1 si el procesamiento fue finalizado
+	# exitosamente, 0 en caso contrario
 
-	############# GUARDAR CARACTER EN EL BUFFER DE PROCESAMIENTO ############
 guardar_c:
+	####### COMPRUEBO QUE HAYA ESPACIO PARA EL NUEVO CARACTER ########
+	lw 	t0, pbyte
+	lw 	t1, offset_procesamiento
+	blt 	t1, t0, guardarCaracter
+
+	########### DUPLICO TAMANIO DE BUFFER DE PROCESAMIENTO ###########
+	add 	t9, t0, t0
+	sw 	t9, 16($fp) # Resguardo el tamanio del nuevo bloque
+
+	lw 	a0, buffer_procesamiento
+	move 	a1, t0
+	move 	a2, t9
+
+	jal 	myrealloc
+
+	########### COMPRUEBO QUE EL REALLOC HAYA SIDO EXITOSO ###########
+	bnez v0, actualizarLongitud
+	nop
+	# Si el realloc no fue exitoso...
+	li v0, 0
+
+	b fin
+	nop
+
+actualizarLongitud:
+	##### ACTUALIZO LAS LONGITUDES DEL BUFFER DE PROCESAMIENTO #######
+	sw v0, buffer_procesamiento
+	lw t3, 16($fp)
+	sw t3, pbyte
+
+	######### GUARDAR CARACTER EN EL BUFFER DE PROCESAMIENTO #########
+guardarCaracter:
 	lw t0, buffer_procesamiento
 	lw t1, offset_procesamiento
 	add t3, t0, t1		#t3 = buffer_procesamiento + offset_procesamiento = puntero de escritura de buffer
 	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
-	############# FIN GUARDAR CARACTER EN EL BUFFER ############
+
 
 	############## AVANCE DE OFFSET #############
 	lw t1, offset_procesamiento
 	add t1, t1, 1
 	sw t1, offset_procesamiento
-	############## FIN AVANCE DE OFFSET #############
 
+
+	############## FIN putchProcesamiento #############
 fin:
 	# restauro callee-saved regs
 	lw	gp, 24(sp)

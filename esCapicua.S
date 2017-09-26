@@ -40,7 +40,8 @@ esCapicua:
 	# t1: puntero al ultimo caracter del buffer de procesamiento
 	# t3: primer caracter del buffer de procesamiento
 	# t4: ultimo caracter del buffer de procesamiento
-
+	# retorna 1 si es capicua, o en caso contrario
+	
 	lw t0, buffer_procesamiento
 	lw t1, buffer_procesamiento
 	lw t2, offset_procesamiento

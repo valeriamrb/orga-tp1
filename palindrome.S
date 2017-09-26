@@ -20,6 +20,7 @@
 .globl offset_salida
 
 .globl buffer_procesamiento
+.globl pbyte
 .globl offset_procesamiento
 
 palindrome:
@@ -43,12 +44,21 @@ palindrome:
 
 	move 	$fp, sp
 
-	##################### INICIO PALINDROME ####################
-	# PARAMETROS:
+	##################### PARAMETROS ####################
+	#Descripcion:
+	# Localiza palabras palindromes en el archivo de entrada
+	# y las coloca en el archivo de salida separadas por un
+	# salto de linea
+
+	# Argumentos:
 	sw	a0, 40($fp)	# a0: File desciptor de archivo de entrada.
 	sw	a1, 44($fp)	# a1: Tamanio en bytes del buffer de entrada.
 	sw	a2, 48($fp)	# a2: File desciptor de archivo de salida.
 	sw	a3, 52($fp)	# a3: Tamanio en bytes del buffer de salida.
+
+	# Retorno:
+	# v0 : Devuelve 1 si el procesamiento fue finalizado
+	# exitosamente, 0 en caso contrario
 
 	################ CREO EL BUFFER DE ENTRADA #################
 	sw 	a1, ibyte		# Guardo tamanio buffer entrada
@@ -73,7 +83,7 @@ palindrome:
 					# en variable global
 
 	################ CREO EL BUFFER DE PROCESAMIENTO #################
-	li 	a0, 100				# a0: Tamanio de buffer en bytes
+	lw 	a0, pbyte			# a0: Tamanio de buffer en bytes
 	jal 	mymalloc
 
 	sw 	v0, buffer_procesamiento	# Guardo puntero a memoria alocada
@@ -89,12 +99,13 @@ loop:
 	# Backapeo el caracter que recibi en 16($fp)
 	sw v0, 16($fp)		#16($fp): Caracter leido
 
-	# Si v0 == 256 entonces termina el programa
+	# Si v0 == 256 entonces se acabo el archivo. Por lo tanto
+	# proceso la ultima palabra.
 	li 	t1, 256
-	beq	v0, t1, fin	#TODO: esinvalido?
+	beq	v0, t1, ultimaPalabra
 	nop
 
-	#Verifico si el caracter es valido
+	############# VERIFICO SI EL CARACTER ES VALIDO ##############
 	lw a0, 16($fp)		# 16($fp): caracter leido a comprobar
 	jal esCaracterValido
 	beqz v0, esInvalido	# v0: valido=1 invalido=0
@@ -105,6 +116,15 @@ loop:
 	lw 	a1, 16($fp)			# 16($fp): caracter leido a guardar
 	jal 	putchProcesamiento
 
+	########## VERIFICO PUTCHPROCESAMIENTO SE REALIZO ############
+	######################## EXITOSAMENTE ########################
+	bnez v0, siguienteCaracter
+	nop
+
+	b huboError # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
+	nop
+
+siguienteCaracter:
 	# Nueva iteracion
 	b	loop
 	nop
@@ -112,6 +132,7 @@ loop:
 esInvalido:
 	#Si el buffer no esta vacio, llamo a esCapicua:
 	lw t5, offset_procesamiento
+
 	beqz t5, loop #TODO: controlar errores
 	nop
 
@@ -125,21 +146,33 @@ esInvalido:
 	jal descargarPalabra
 
 resetOffsetProcesamiento:
-
 	sw  zero, offset_procesamiento
 
 	#loopea cargando la siguiente palabra en el buffer de procesamiento
 	b loop
 	nop
 
-	# b flush
-	# nop
+	b fin
+	nop
+
+ultimaPalabra:
+	# Si el buffer no esta vacio => fin del programa
+	# Sino => llamo a esCapicua
+	lw t5, offset_procesamiento
+	beqz t5, fin
+	nop
+	# capicua = 1, no capicua = 0
+	jal esCapicua
+	#Si no es capicua termina el programa
+	beqz v0 , fin
+	nop
+	#Si es capicua llama a descargar palabra del buffer de salida
+	lw a0, 48($fp)
+	jal descargarPalabra
 
 fin:
-
-	# lw a0, 48($fp)		# a2:48($fp):File desciptor de archivo de salida.
-	# jal descargarPalabra
-
+	# Descargo de buffer de salida lo que quede pendiente de escribir
+	# en disco.
 	lw 	a0, 48($fp)	# a0: File desciptor de archivo de salida.
 	jal 	flush
 
@@ -154,6 +187,15 @@ fin:
 	############### ELIMINO EL BUFFER DE PROCESAMIENTO ###############
 	lw 	a0, buffer_procesamiento
 	jal 	myfree
+
+	# Si llegue hasta aca el procesamiento fue exitoso y devuelvo 1
+	li v0, 1
+	b salir
+
+huboError:
+	li v0, 0 # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
+
+salir:
 
 	####################### FIN PALINDROME #####################
 
@@ -180,4 +222,5 @@ obyte:		.word	1
 offset_salida:	.word	0
 
 buffer_procesamiento: .word 0
+pbyte:		      .word 1	#Cantidad de bytes por defecto del buffer de procesamientos
 offset_procesamiento: .word 0
