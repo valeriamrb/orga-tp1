@@ -107,13 +107,13 @@ loop:
 	# proceso la ultima palabra.
 	li 	t1, 256
 	beq	v0, t1, ultimaPalabra
-	nop
+
 
 	############# VERIFICO SI EL CARACTER ES VALIDO ##############
 	lw a0, 16($fp)		# 16($fp): caracter leido a comprobar
 	jal esCaracterValido
 	beqz v0, esInvalido	# v0: valido=1 invalido=0
-	nop
+
 
 	# Guardo caracter en buffer_procesamiento
 	lw 	a0, buffer_procesamiento	# a0: puntero al buffer de procesamiento
@@ -123,53 +123,56 @@ loop:
 	########## VERIFICO PUTCHPROCESAMIENTO SE REALIZO ############
 	######################## EXITOSAMENTE ########################
 	bnez v0, siguienteCaracter
-	nop
+
 
 	b error # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
-	nop
+
 
 siguienteCaracter:
 	# Nueva iteracion
 	b	loop
-	nop
+
 
 esInvalido:
 	#Si el buffer no esta vacio, llamo a esCapicua:
 	lw t5, offset_procesamiento
 
 	beqz t5, loop #TODO: controlar errores
-	nop
+
 
 	jal esCapicua
 	# chequeo v0
 	beqz v0 , resetOffsetProcesamiento
-	nop
+
 	#Si es capicua llama a descargar palabra
 
 	lw a0, 48($fp)
 	jal descargarPalabra
+
+	####### VERIFICO ERROR EN DESCARGARPALABRA ########
+	beq v0, zero, error
 
 resetOffsetProcesamiento:
 	sw  zero, offset_procesamiento
 
 	#loopea cargando la siguiente palabra en el buffer de procesamiento
 	b loop
-	nop
+
 
 	b fin
-	nop
+
 
 ultimaPalabra:
 	# Si el buffer no esta vacio => fin del programa
 	# Sino => llamo a esCapicua
 	lw t5, offset_procesamiento
 	beqz t5, fin
-	nop
+
 	# capicua = 1, no capicua = 0
 	jal esCapicua
 	#Si no es capicua termina el programa
 	beqz v0 , fin
-	nop
+
 	#Si es capicua llama a descargar palabra del buffer de salida
 	lw a0, 48($fp)
 	jal descargarPalabra

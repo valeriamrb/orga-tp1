@@ -54,10 +54,10 @@ myrealloc:
 
 	# Si la nueva longitud a2 no es suficiente para reallocar se devuelve un 0
 	bge 	a2, a1, reservarMemoria
-	nop
+	
 	li 	v0, 0	#No es posible reallocar => retorno 0
 	b fin
-	nop
+	
 
 	############### RESERVO NUEVO BLOQUE DE MEMORIA #############
 reservarMemoria:
@@ -68,10 +68,10 @@ reservarMemoria:
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
 	bne	v0, zero, copiarContenido
-	nop
+	
 	li 	v0, 0	#No es posible reallocar => retorno 0
 	b fin
-	nop
+	
 
 	#### COPIO EL CONTENIDO DEL BLOQUE DE MEMORIA ANTERIOR  #####
 	################### EN EL NUEVO BLOQUE ######################

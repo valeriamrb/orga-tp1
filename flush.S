@@ -32,7 +32,12 @@ flush:
 
 	move $fp, sp
 
+	##################### ARGUMENTOS #######################
 	sw	a0, 40($fp)	# a0: File desciptor de archivo de salida.
+
+	# RETORNO:
+	# En caso de exito se devuelve un 1
+	# Si ocurre un error fatal de escritura se devuelve un 0.
 
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
@@ -41,7 +46,12 @@ flush:
 	lw a2, offset_salida	#offset_salida: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
+	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
+	bne a3, zero, error
+	li v0, 1
+	b fin
 	###########FIN CARGAR ARCHIVO DESDE BUFFER###################
+error:	li v0, 0
 fin:
 	# restauro callee-saved regs
 	lw	gp, 24(sp)

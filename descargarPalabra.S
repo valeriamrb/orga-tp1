@@ -39,6 +39,11 @@ descargarPalabra:
 	############# GUARDAR CARACTER EN EL BUFFER ############
 	# t0: puntero al primer caracter del buffser de procesamiento
 	# t1: puntero al ultimo caracter del buffer de procesamiento
+
+	# RETORNO:
+	# Si ocurre un error fatal de escritura se devuelve un 0.
+	# En caso de exito se devuelve un 1
+
 	lw t0, buffer_procesamiento
 	lw t1, offset_procesamiento
 	sub t1, t1, 1	# TODO: ver
@@ -55,6 +60,9 @@ loop:
 	# Guardo caracter en buffer de salida
 	jal 	putch
 
+	############## COMPRUEBO ERROR EN PUTCH #############
+	beq v0, zero, error
+
 	# restauro t0 y t1
 	lw t0, 16($fp)
 	lw t1, 20($fp)
@@ -65,13 +73,19 @@ loop:
 	############## LOOPEO MIENTRAS QUE EL PUNTERO #############
 	############ DE LECTURA NO SE SALGA DEL BUFFER ############
 	ble t0, t1, loop
-	nop
 
-fin:
 	############## AGREGO CARCTER DE FIN DE LINEA #############
 	lw 	a0, 40($fp)	# a0: file descriptor archivo salida
 	li 	a1, 10		# a1: caracter a guardar
 	jal putch
+
+	li v0, 1	# En caso de exito devuelvo 1
+
+	b fin
+error:
+	li v0, 0	# En caso de error devuelvo 0
+
+fin:
 
 	######### RESETEO OFFSET DE PROCESAMIENTO A CERO ##########
 	sw zero, offset_procesamiento	# TODO: ver

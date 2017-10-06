@@ -41,6 +41,11 @@ putch:
 	# a1: Caracter a guardar en archivo salida
 
 	#t3 = buffer_salida + offset_salida = puntero de escritura de buffer
+
+	# RETORNO:
+	# Si ocurre un error fatal de escritura se devuelve un 0.
+	# En caso de exito se devuelve un 1.
+
 	############# GUARDAR CARACTER EN EL BUFFER ############
 guardar_c:
 	lw t0, buffer_salida
@@ -61,7 +66,7 @@ guardar_c:
 	lw t8, offset_salida
 	lw t7, obyte
 	blt t8, t7, fin
-	nop
+
 
 	############ DESCARGO BUFFER EN DISCO ####################
 	li v0, SYS_write
@@ -70,8 +75,16 @@ guardar_c:
 	lw a2, obyte		#obytes: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
+	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
+	bne a3, zero, error
+
 	sw zero, offset_salida #reseteo el offset.
 
+	li v0, 1	# En caso de exito devuelvo 1
+
+	b fin
+
+error:	li v0, 0	# En caso de error devuelvo 0
 	##################### FIN PUTCH ###########################
 fin:
 	# restauro callee-saved regs

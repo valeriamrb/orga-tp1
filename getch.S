@@ -46,7 +46,7 @@ getch:
 	# 		      Sino => LEER CARACTER DESDE EL BUFFER
 	lw 	t4, offset_entrada
 	bnez 	t4, leer_caracter
-	nop
+
 
 	############### CARGA DE BUFFER DESDE ARCHIVO ##############
 	li 	v0, SYS_read		#v0: Nombre syscall.
@@ -56,13 +56,14 @@ getch:
 	syscall				#TODO: Verificar A3 cantidad leida
 
 
+	############### COMPRUEBO ERROR FATAL DE LECTURA ##############
 	bne a3, zero, error
 
 	###################### CONTROL DE EOF ######################
 	# Si v0 es cero entonces se alcanzo el fin de archivo
 	# y se devuelve el numero 256.
 	beqz v0, eof
-	nop
+
 
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
 	# Si el buffer no se carga completamente reduzco su tamanio
@@ -71,7 +72,7 @@ getch:
 
 	lw  	t5, ibyte		# t5: Longitud buffer.
 	beq 	t5, v0, leer_caracter	# v0: Cantidad de caracteres leidos
-	nop				# de disco.
+					# de disco.
 	sw 	v0, ibyte		# Reduccion de buffer.
 
 
@@ -99,10 +100,10 @@ leer_caracter:
 	lw 	t7, ibyte		# t7: Longitud de buffer.
 	lw 	t8, offset_entrada	# t8: Offset en bytes.
 	bne 	t8, t7, fin
-	nop
+
 	sw 	zero, offset_entrada	# Reseteo de offset.
 	b	fin
-	nop
+
 
 eof:	li 	v0, 256			# devuelvo 256 en caso de
 					# alcanzar eof

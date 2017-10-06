@@ -54,7 +54,7 @@ loop:
 	lb t4, 0(t1)
 
 	bne t3, t4, noEsCapicua
-	nop
+	
 	add t0, t0, 1
 	sub t1, t1, 1
 

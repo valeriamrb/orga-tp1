@@ -58,27 +58,27 @@ esCaracterValido:
 
 	#Validar Letras Minusculas
 	ble a0, t1, ValidarNumeros
-	nop
+	
 	blt a0, t2, esValido
-	nop
+	
 
 ValidarNumeros:
 	blt a0, t3, ValidarMayusculas
-	nop
+	
 	blt a0, t5, esValido
-	nop
+	
 
 ValidarMayusculas:
 	ble a0, t7, ValidarGuiones
-	nop
+	
 	blt a0, t8, esValido
-	nop
+	
 
 ValidarGuiones:
 	beq a0, t4, esValido
-	nop
+	
 	beq a0, t6, esValido
-	nop
+	
 
 	#Si paso por todas las validaciones sin saltar a es Valido devuelvo 0
 	li v0, 0

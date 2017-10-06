@@ -62,12 +62,12 @@ guardar_c:
 
 	########### COMPRUEBO QUE EL REALLOC HAYA SIDO EXITOSO ###########
 	bnez v0, actualizarLongitud
-	nop
+
 	# Si el realloc no fue exitoso...
 	li v0, 0
 
 	b fin
-	nop
+
 
 actualizarLongitud:
 	##### ACTUALIZO LAS LONGITUDES DEL BUFFER DE PROCESAMIENTO #######
@@ -90,7 +90,7 @@ guardarCaracter:
 
 
 	############## FIN putchProcesamiento #############
-fin:
+fin:	li v0, 1	# En caso de exito devuelvo 1
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)
