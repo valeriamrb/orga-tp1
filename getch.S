@@ -37,8 +37,9 @@ getch:
 	sw	a0, 40($fp)
 	# a0: File desciptor de archivo de entrada.
 	# RETORNO:
-	# v0: Caracter leido desde el buffer. Si se alcanza un EOF
-	# se devuelve un 256.
+	# v0: Caracter leido desde el buffer.
+	# Si se alcanza un EOF se devuelve un 256.
+	# Si ocurre un error fatal de lectura se devuelve un 257.
 
 	################## DECIDO SI CARGO BUFFER ##################
 	# Si (offset_entrada == 0) => CARGA DE BUFFER DESDE ARCHIVO.
@@ -53,6 +54,9 @@ getch:
 	lw 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos.
 	lw 	a2, ibyte		#a2: Cantidad de bytes a leer.
 	syscall				#TODO: Verificar A3 cantidad leida
+
+
+	bne a3, zero, error
 
 	###################### CONTROL DE EOF ######################
 	# Si v0 es cero entonces se alcanzo el fin de archivo
@@ -102,6 +106,10 @@ leer_caracter:
 
 eof:	li 	v0, 256			# devuelvo 256 en caso de
 					# alcanzar eof
+	b fin
+error:
+	li 	v0, 257			# devuelvo 257 en caso
+					# de error fatal de lectura
 fin:
 	########################## FIN GETCH #######################
 	# restauro callee-saved regs

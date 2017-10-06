@@ -96,6 +96,10 @@ loop:
 	lw 	a0, 40($fp)	# 40($fp): File desciptor de archivo de entrada.
 	jal 	getch		#Recibo caracter leido en v0
 
+	###### COMPRUEBO ERROR DE GETCH #####
+	li t2, 257
+	beq v0, t2, error
+
 	# Backapeo el caracter que recibi en 16($fp)
 	sw v0, 16($fp)		#16($fp): Caracter leido
 
@@ -121,7 +125,7 @@ loop:
 	bnez v0, siguienteCaracter
 	nop
 
-	b huboError # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
+	b error # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
 	nop
 
 siguienteCaracter:
@@ -192,7 +196,7 @@ fin:
 	li v0, 1
 	b salir
 
-huboError:
+error:
 	li v0, 0 # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
 
 salir:
