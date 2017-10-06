@@ -1,9 +1,3 @@
-/*
- * $Id: main.c,v 1.1 2008/04/22 03:11:50 hmasci Exp $
- *
- * 66.20 - Ejercicio A.8 (Patterson - Hennessy)
- */
-
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
@@ -38,7 +32,7 @@ void mostrar_usage()
 	printf("\t-O --ibuff-bytes\tByte-count of the output buffer.\n");
 	printf("\n");
 	printf("Examples:\n");
-	printf("\ttp0 -i ~/input ~/output\n");
+	printf("\ttp0 -i ~/input -o ~/output -I 4 -O 4\n");
 }
 
 void mostrar_version()
@@ -67,6 +61,10 @@ int main(int argc, char **argv)
 	int obuff = 0;
 	char* ibuff_size;
 	char* obuff_size;
+	int ibuff_size_number;
+	int obuff_size_number;
+
+	int error_en_palindrome;
 
 	FILE* input_handler = NULL;
 	FILE* output_handler = NULL;
@@ -161,6 +159,26 @@ int main(int argc, char **argv)
 	else
 		error_parametros_incorrectos();
 
+
+	// Compruebo parametros de buffers
+
+	if ((ibuff == 0) || strcmp(ibuff_size,  "") == 0)
+		ibuff_size_number = 1;
+	else {
+		ibuff_size_number = atoi(ibuff_size);
+		if (!ibuff_size_number)
+			error_parametros_incorrectos();
+	}
+
+
+	if ((obuff == 0) || strcmp(obuff_size,  "") == 0)
+		obuff_size_number = 1;
+	else {
+		obuff_size_number = atoi(obuff_size);
+		if (!obuff_size_number)
+			error_parametros_incorrectos();
+	}
+
 	switch (entrada_salida) {
 		case STDIN_STDOUT:
 			input_handler = stdin;
@@ -195,11 +213,10 @@ int main(int argc, char **argv)
 			break;
 	}
 
+	error_en_palindrome = palindrome(fileno(input_handler), ibuff_size_number, fileno(output_handler), obuff_size_number);
 
-	int ibuff_size_number = atoi(ibuff_size);
-	int obuff_size_number = atoi(obuff_size);
-
-	palindrome(fileno(input_handler), ibuff_size_number, fileno(output_handler), obuff_size_number);
+	if (!error_en_palindrome)
+		fprintf(stderr, "Hubo un error en el procesamiento\n");
 
 	switch (entrada_salida) {
 		case STDIN_STDOUT:
