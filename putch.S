@@ -35,6 +35,9 @@ putch:
 	sw	a0, 40($fp)
 	sw	a1, 44($fp)
 
+	# Reserva de registro s0
+	sw 	s0, 36($fp)
+
 	###########################################################
 
 	# a0: file desciptor de archivo de salida
@@ -53,7 +56,6 @@ guardar_c:
 	add t3, t0, t1		#t3 = puntero de escritura de buffer
 	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
 
-
 	############## AVANCE DE OFFSET #############
 	lw t0, offset_salida
 	add t0, t0, 1
@@ -67,17 +69,34 @@ guardar_c:
 	lw t7, obyte
 	blt t8, t7, fin
 
+	##########################################
+	lw 	s0, obyte	#Cantidad de bytes a leer en cada iteracion de loop
+
+loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
+	# de caracteres solicitados a putch
 
 	############ DESCARGO BUFFER EN DISCO ####################
 	li v0, SYS_write
 	lw a0, 40($fp)
 	lw a1, buffer_salida	#a1: Puntero donde guardar datos leidos.
-	lw a2, obyte		#obytes: cantidad de bytes a guardar
+	move a2, s0		#obytes: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
 	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
 	bne a3, zero, error
 
+	# Si no hay error....
+	#### VERIFICO QUE SE HAYAN ESCRITO LA CANTIDAD DE BYTES PEDIDOS ####
+	blt v0, s0, decrementar
+
+	b nodecrementar
+decrementar:
+	sub s0, s0, v0		# Si no se leyo la cantidad de bytes pedida
+	b loop			# leo la cantidad restante.
+
+nodecrementar:
+
+	################>:3
 	sw zero, offset_salida #reseteo el offset.
 
 	li v0, 1	# En caso de exito devuelvo 1
@@ -87,6 +106,10 @@ guardar_c:
 error:	li v0, 0	# En caso de error devuelvo 0
 	##################### FIN PUTCH ###########################
 fin:
+
+	# Recupero registro s0
+	lw 	s0, 36($fp)
+
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)

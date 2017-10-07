@@ -30,6 +30,10 @@ getch:
 	sw	$fp, 28(sp)
 	sw	ra, 32(sp)
 
+	# Reserva de registro s0
+	sw 	s0, 36($fp)
+
+
 	move 	$fp, sp
 
 	######################## INICIO GETCH ######################
@@ -47,15 +51,24 @@ getch:
 	lw 	t4, offset_entrada
 	bnez 	t4, leer_caracter
 
-	lw 	t6, ibyte	#Cantidad de bytes a leer en cada iteracion de loop
+	##########################################
+	lw 	s0, ibyte	#Cantidad de bytes a leer en cada iteracion de loop
 	li 	t2, 0		#Cantidad total de bytes leidos en todas las iteraciones de loop.
-loop:
+
+loop:	# Este loop se repite hasta que se pueda leer la cantidad total
+	# de caracteres solicitados a getch
+
+
+	sw t2, 16($fp) # Backup de t2
+
 	############### CARGA DE BUFFER DESDE ARCHIVO ##############
 	li 	v0, SYS_read		#v0: Nombre syscall.
 	lw 	a0, 40($fp)		#a0: File descriptor.
 	lw 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos.
-	move 	a2, t6		#a2: Cantidad de bytes a leer.
+	move 	a2, s0			#a2: Cantidad de bytes a leer.
 	syscall
+
+	lw t2, 16($fp) # Recupero t2
 
 	############### COMPRUEBO ERROR FATAL DE LECTURA ##############
 	bne a3, zero, error
@@ -69,13 +82,12 @@ loop:
 	add t2, t2, v0
 
 	#### VERIFICO QUE SE HAYAN LEIDO LA CANTIDAD DE BYTES PEDIDOS ####
-	lw t6, ibyte
-	blt v0, t6, decrementar
+	blt v0, s0, decrementar
 
 	b nodecrementar
 decrementar:
-	sub t6, t6, v0		# Si no se leyo la cantidad de bytes pedida
-				# leo la cantidad restante.
+	sub s0, s0, v0		# Si no se leyo la cantidad de bytes pedida
+	b loop			# leo la cantidad restante.
 
 nodecrementar:
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
@@ -126,6 +138,10 @@ error:
 					# de error fatal de lectura
 fin:
 	########################## FIN GETCH #######################
+
+	# Recupero registro s0
+	lw 	s0, 36($fp)
+
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)

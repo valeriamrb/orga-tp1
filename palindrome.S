@@ -56,7 +56,7 @@ palindrome:
 	sw	a2, 48($fp)	# a2: File desciptor de archivo de salida.
 	sw	a3, 52($fp)	# a3: Tamanio en bytes del buffer de salida.
 
-	# Reserva de registro S0
+	# Reserva de registro s0
 	sw 	s0, 36($fp)
 
 
@@ -107,6 +107,13 @@ guardarpunterosalida:
 	lw 	a0, pbyte			# a0: Tamanio de buffer en bytes
 	jal 	mymalloc
 
+	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
+	bne	v0, zero, guardarpunteroprocesamiento
+	li 	s0, 0 # Si hay error seteo en cero
+	b 	borrarbuffersalida
+
+guardarpunteroprocesamiento:
+		########### GUARDO PUNTERO A BUFFER DE SALIDA ############
 	sw 	v0, buffer_procesamiento	# Guardo puntero a memoria alocada
 						# en variable global
 
@@ -209,6 +216,7 @@ fin:
 	lw 	a0, buffer_procesamiento
 	jal 	myfree
 
+borrarbuffersalida:
 	############### ELIMINO EL BUFFER DE SALIDA ###############
 	lw 	a0, buffer_salida
 	jal 	myfree
@@ -234,7 +242,7 @@ salir:
 
 	# Recupero registro s0
 	lw 	s0, 36($fp)
-	
+
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)
