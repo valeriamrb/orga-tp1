@@ -49,7 +49,7 @@ getch:
 	# Si (offset_entrada == 0) => CARGA DE BUFFER DESDE ARCHIVO.
 	# 		      Sino => LEER CARACTER DESDE EL BUFFER
 	lw 	t4, offset_entrada
-	bnez 	t4, leer_caracter
+	bnez 	t4, leer_caracter_desde_buffer
 
 	##########################################
 	lw 	s0, ibyte	#Cantidad de bytes a leer en cada iteracion de loop
@@ -76,13 +76,20 @@ loop:	# Este loop se repite hasta que se pueda leer la cantidad total
 	###################### CONTROL DE EOF ######################
 	# Si v0 es cero entonces se alcanzo el fin de archivo
 	# y se devuelve el numero 256.
-	beqz v0, eof
+	bnez v0, no_eof
 
+	#caso encontrado EOF...
+	bnez t2, nodecrementar		#TODO: Gaston
+	li 	v0, 256			# devuelvo 256 en caso de
+					# alcanzar eof
+	b fin
+
+no_eof:
 	############## ACUMULO LA CANTIDAD DE BYTES LEIDOS #############
 	add t2, t2, v0
 
 	#### VERIFICO QUE SE HAYAN LEIDO LA CANTIDAD DE BYTES PEDIDOS ####
-	blt v0, s0, decrementar
+	blt v0, s0, decrementar  #TODO: ERRRRROR!!!!
 
 	b nodecrementar
 decrementar:
@@ -91,17 +98,17 @@ decrementar:
 
 nodecrementar:
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
-	# Si el buffer no se carga completamente reduzco su tamanio
+	# Si el buffer no se carga completamente reduzco su tamanio logico
 	# a la cantidad de caracteres leidos de disco. Esto puede
 	# ocurrir solo en la ultima lectura desde disco.
 
 	lw  	t5, ibyte		# t5: Longitud buffer.
-	beq 	t5, t2, leer_caracter	# v0: Cantidad de caracteres leidos
+	beq 	t5, t2, leer_caracter_desde_buffer	# v0: Cantidad de caracteres leidos
 					# de disco.
-	sw 	v0, ibyte		# Reduccion de buffer.
+	sw 	t2, ibyte		# Reduccion de buffer. //TODO: GASTON
 
 
-leer_caracter:
+leer_caracter_desde_buffer:
 	############### LEER CARACTER DESDE EL BUFFER ##############
 	lw 	t0, buffer_entrada	# t0: Puntero al inicio del buffer.  TODO: Cambio por LW
 	lw 	t1, offset_entrada	# t1: Offset en bytes en el buffer.
@@ -128,11 +135,6 @@ leer_caracter:
 
 	sw 	zero, offset_entrada	# Reseteo de offset.
 	b	fin
-
-
-eof:	li 	v0, 256			# devuelvo 256 en caso de
-					# alcanzar eof
-	b fin
 error:
 	li 	v0, 257			# devuelvo 257 en caso
 					# de error fatal de lectura

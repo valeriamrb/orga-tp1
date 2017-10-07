@@ -3,18 +3,13 @@
  #include <string.h>
  #include <ctype.h>
 
-#define VERSION "0.1.0beta"
-typedef enum {
-	STDIN_STDOUT,
-	ARCHIVO_STDOUT,
-	STDIN_ARCHIVO,
-	ARCHIVO_ARCHIVO
-} modo_entrada_salida;
+ #include <unistd.h>
+ #include <getopt.h>
 
-// int getch(int ifd);
-// int putch(int ofd, int caracter);
+
+#define VERSION "0.1.0"
+
 int palindrome(int ifd, int ibytes, int ofd, int obytes);
-// int esCaracterValido(int c);
 
 void mostrar_usage()
 {
@@ -28,8 +23,8 @@ void mostrar_usage()
 	printf("\t-h --help\tPrint this information.\n");
 	printf("\t-i --input\tLocation of the input file.\n");
 	printf("\t-o --output\tLocation of the output file.\n");
-	printf("\t-I --ibuff-bytes\tByte-count of the input buffer.\n");
-	printf("\t-O --ibuff-bytes\tByte-count of the output buffer.\n");
+	printf("\t-I --ibuf-bytes\tByte-count of the input buffer.\n");
+	printf("\t-O --obuf-bytes\tByte-count of the output buffer.\n");
 	printf("\n");
 	printf("Examples:\n");
 	printf("\ttp0 -i ~/input -o ~/output -I 4 -O 4\n");
@@ -47,191 +42,120 @@ int error_parametros_incorrectos()
 	exit(1);
 }
 
-int main(int argc, char **argv)
-{
-	size_t i;
+void print_usage() {
+	printf("Usage: rectangle [ap] -l num -b num\n");
+}
+
+int main(int argc, char *argv[]) {
+	int opt= 0;
+
 	int version = 0;
 	int help = 0;
-	int input = 0;
-	int output = 0;
-	char* input_path;
-	char* output_path;
-
+	char* input = NULL;
+	char* output = NULL;
 	int ibuff = 0;
 	int obuff = 0;
-	char* ibuff_size;
-	char* obuff_size;
-	int ibuff_size_number;
-	int obuff_size_number;
-
-	int error_en_palindrome;
-
 	FILE* input_handler = NULL;
 	FILE* output_handler = NULL;
-	modo_entrada_salida entrada_salida = 0;
 
-	for (i = 1; i < argc; i++) {
-		if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
-			version++;
-		} else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-			help++;
-		} else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--input") == 0) {
-			input++;
-			if (i + 1 <= argc - 1) {
-				i++;
-				input_path = argv[i];
-			} else {
-				error_parametros_incorrectos();
-			}
-		} else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
-			output++;
-			if (i + 1 <= argc - 1) {
-				i++;
-				output_path = argv[i];
-			} else {
-				error_parametros_incorrectos();
-			}
-		} else if (strcmp(argv[i], "-I") == 0 || strcmp(argv[i], "--ibuf-bytes") == 0) {
-			ibuff++;
-			if (i + 1 <= argc - 1) {
-				i++;
-				ibuff_size = argv[i];
-			} else {
-				error_parametros_incorrectos();
-			}
-		} else if (strcmp(argv[i], "-O") == 0 || strcmp(argv[i], "--obuf-bytes") == 0) {
-			obuff++;
-			if (i + 1 <= argc - 1) {
-				i++;
-				obuff_size = argv[i];
-			} else {
-				error_parametros_incorrectos();
-			}
-		}
-		else {
-			error_parametros_incorrectos();
+	int error_en_palindrome = 0;
+
+	static struct option long_options[] = {
+		{"version",	no_argument,		0,	'v' },
+		{"help",	no_argument,		0,	'h' },
+		{"input",	required_argument,	0,	'i' },
+		{"output", 	required_argument,	0,	'o' },
+		{"ibuf-bytes",	required_argument,	0,	'I' },
+		{"obuf-bytes",	required_argument,	0,	'O' },
+		{0,		0,                 	0,	 0  }
+	};
+
+	int long_index =0;
+	while ((opt = getopt_long(argc, argv, "vhi:o:I:O:",
+	long_options, &long_index )) != -1) {
+		switch (opt) {
+			case 'v' : version = 1;
+			break;
+			case 'h' : help = 1;
+			break;
+			case 'i' : input = optarg;
+			break;
+			case 'o' : output = optarg;
+			break;
+			case 'I' : ibuff = atoi(optarg);
+			break;
+			case 'O' : obuff = atoi(optarg);
+			break;
+			default: mostrar_usage();
+			exit(EXIT_FAILURE);
 		}
 	}
 
-	if (version > 1 || help > 1 || input > 1 || output > 1 || ibuff > 1 || obuff > 1) {
-		error_parametros_incorrectos();
+	// Si alguna de las opciones elegidas es -h entonces
+	// solo se muestra el usage y se finaliza el programa.
+	if (help) {
+		mostrar_usage();
+		return 0;
 	}
 
-	if (help == 1) {
-		if (argc == 2) {
-			mostrar_usage();
-			exit(0);
-		} else {
-			error_parametros_incorrectos();
-		}
+	// Si alguna de las opciones elegidas es -v entonces
+	// solo se muestra la version y se finaliza el programa.
+	if (version) {
+		mostrar_version();
+		return 0;
 	}
 
-	if (version == 1) {
-		if (argc == 2) {
-			mostrar_version();
-			exit(0);
-		} else {
-			error_parametros_incorrectos();
-		}
-	}
-
-	if     ((input == 0 && output == 0) ||
-		(input == 0 && output == 1 && strcmp(output_path, "-") == 0) ||
-		(input == 1 && output == 0 && strcmp(input_path,  "-") == 0) ||
-		(input == 1 && output == 1 && strcmp(input_path,  "-") == 0 &&
-					      strcmp(output_path, "-") == 0))
-			entrada_salida = STDIN_STDOUT;
-	else
-	if     ((input == 0 && output == 1 && strcmp(output_path, "-") != 0) ||
-	 	(input == 1 && output == 1 && strcmp(input_path,  "-") == 0 &&
-		 		              strcmp(output_path, "-") != 0))
-			entrada_salida = STDIN_ARCHIVO;
-	else
-	if     ((input == 1 && output == 0 && strcmp(input_path,  "-") != 0) ||
-	 	(input == 1 && output == 1 && strcmp(input_path,  "-") != 0 &&
-					      strcmp(output_path, "-") == 0))
-			entrada_salida = ARCHIVO_STDOUT;
-	else
-	if 	(input == 1 && output == 1 &&
-		strcmp(input_path,  "-") != 0 &&
-		strcmp(output_path,  "-") != 0)
-		 	entrada_salida = ARCHIVO_ARCHIVO;
-	else
-		error_parametros_incorrectos();
-
-
-	// Compruebo parametros de buffers
-
-	if ((ibuff == 0) || strcmp(ibuff_size,  "") == 0)
-		ibuff_size_number = 1;
+	// Fijo el origen de datos del programa (input_handler)
+	if (!input || (input && strcmp(input, "-")) == 0)
+		input_handler = stdin;
 	else {
-		ibuff_size_number = atoi(ibuff_size);
-		if (!ibuff_size_number)
-			error_parametros_incorrectos();
+		input_handler = fopen(input, "r");
+		if (!input_handler) {
+			fprintf(stderr, "Error en apertura de entrada.\n");
+			exit(EXIT_FAILURE);
+		}
 	}
 
-
-	if ((obuff == 0) || strcmp(obuff_size,  "") == 0)
-		obuff_size_number = 1;
+	// Fijo el destino de datos del programa (output_handler)
+	if (!output || (output && strcmp(output, "-")) == 0)
+		output_handler = stdout;
 	else {
-		obuff_size_number = atoi(obuff_size);
-		if (!obuff_size_number)
-			error_parametros_incorrectos();
+		output_handler = fopen(output, "w");
+		if (!input_handler) {
+			fprintf(stderr, "Error en apertura de salida.\n");
+			if (input_handler && input_handler != stdin)
+				fclose(input_handler);
+			exit(EXIT_FAILURE);
+		}
 	}
 
-	switch (entrada_salida) {
-		case STDIN_STDOUT:
-			input_handler = stdin;
-			output_handler = stdout;
-			break;
-		case ARCHIVO_STDOUT:
-			input_handler = fopen(input_path, "r");
-			output_handler = stdout;
-			if (!input_handler) {
-				fprintf(stderr, "Error en apertura de archivo");
-				return 1;
-			}
-			break;
-		case STDIN_ARCHIVO:
-			input_handler = stdin;
-			output_handler = fopen(output_path, "w");
-			if (!output_handler) {
-				fprintf(stderr, "Error en apertura de archivo");
-				return 1;
-			}
-			break;
-		case ARCHIVO_ARCHIVO:
-			input_handler = fopen(input_path, "r");
-			output_handler = fopen(output_path, "w");
+	// Si no se especifica el tamanio del buffer de entrada este
+	// es 1 por defecto
+	if (!ibuff)
+		ibuff = 1;
 
-			if (!input_handler || !output_handler) {
-				if (input_handler) fclose(input_handler);
-				if (output_handler) fclose(output_handler);
-				fprintf(stderr, "Error en apertura de archivo");
-				return 1;
-			}
-			break;
-	}
+	// Si no se especifica el tamanio del buffer de salida este
+	// es 1 por defecto
+	if (!obuff)
+		obuff = 1;
 
-	error_en_palindrome = palindrome(fileno(input_handler), ibuff_size_number, fileno(output_handler), obuff_size_number);
+	// printf("Procesando...\n");
+	// printf("ibuff: %d\n", ibuff);
+	// printf("obuff: %d\n", obuff);
+	// printf("input: %s, fileno: %d\n", input, fileno(input_handler));
+	// printf("output: %s, fileno: %d\n", output, fileno(output_handler));
+
+	error_en_palindrome = palindrome(fileno(input_handler), ibuff, fileno(output_handler), obuff);
 
 	if (!error_en_palindrome)
 		fprintf(stderr, "Hubo un error en el procesamiento\n");
 
-	switch (entrada_salida) {
-		case STDIN_STDOUT:
-			break;
-		case ARCHIVO_STDOUT:
-			fclose(input_handler);
-			break;
-		case STDIN_ARCHIVO:
-			fclose(output_handler);
-			break;
-		case ARCHIVO_ARCHIVO:
-			fclose(input_handler);
-			fclose(output_handler);
-			break;
-	}
+	// Cierro los archivos que no sean entrada o salida estandar
+	if (input_handler && input_handler != stdin)
+		fclose(input_handler);
+
+	if (output_handler && output_handler != stdout)
+		fclose(output_handler);
 
 	return 0;
 }

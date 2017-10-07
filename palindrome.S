@@ -132,7 +132,7 @@ loop:
 	sw v0, 16($fp)		#16($fp): Caracter leido
 
 	# Si v0 == 256 entonces se acabo el archivo. Por lo tanto
-	# proceso la ultima palabra.
+	# proceso la ultima palabra que quedo pendiente en el buffer de procesamiento
 	li 	t1, 256
 	beq	v0, t1, ultimaPalabra
 
@@ -193,6 +193,9 @@ resetOffsetProcesamiento:
 ultimaPalabra:
 	# Si el buffer no esta vacio => fin del programa
 	# Sino => llamo a esCapicua
+
+	# Si el buffer de procesamiento esta vacio => fin del programa
+	# Sino => Verificar se el contenido del buffer de procesamiento es capicua
 	lw t5, offset_procesamiento
 	beqz t5, fin
 
@@ -201,8 +204,8 @@ ultimaPalabra:
 	#Si no es capicua termina el programa
 	beqz v0 , fin
 
-	#Si es capicua llama a descargar palabra del buffer de salida
-	lw a0, 48($fp)
+	#Si es capicua se descarga la palabra al buffer de salida
+	lw a0, 48($fp)		# a0: File desciptor de archivo de salida.
 	jal descargarPalabra
 
 fin:

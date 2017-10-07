@@ -32,6 +32,10 @@ descargarPalabra:
 
 	move $fp, sp
 
+	##################### DESCRIPCION #######################
+	# Descarga el contenido desde buffer de procesamiento
+	# hacia el buffer de salida utilizando putch. La descarga
+	# se realiza de a caracteres.
 
 	##################### ARGUMENTOS #######################
 	sw	a0, 40($fp)	# a0:File desciptor de archivo de salida.
