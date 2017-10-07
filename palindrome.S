@@ -266,5 +266,5 @@ obyte:		.word	1
 offset_salida:	.word	0
 
 buffer_procesamiento: .word 0
-pbyte:		      .word 100	#Cantidad de bytes por defecto del buffer de procesamientos
+pbyte:		      .word 1	#Cantidad de bytes por defecto del buffer de procesamientos
 offset_procesamiento: .word 0
