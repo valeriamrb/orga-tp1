@@ -47,14 +47,15 @@ getch:
 	lw 	t4, offset_entrada
 	bnez 	t4, leer_caracter
 
-
+	lw 	t6, ibyte	#Cantidad de bytes a leer en cada iteracion de loop
+	li 	t2, 0		#Cantidad total de bytes leidos en todas las iteraciones de loop.
+loop:
 	############### CARGA DE BUFFER DESDE ARCHIVO ##############
 	li 	v0, SYS_read		#v0: Nombre syscall.
 	lw 	a0, 40($fp)		#a0: File descriptor.
 	lw 	a1, buffer_entrada	#a1: Puntero donde guardar datos leidos.
-	lw 	a2, ibyte		#a2: Cantidad de bytes a leer.
-	syscall				#TODO: Verificar A3 cantidad leida
-
+	move 	a2, t6		#a2: Cantidad de bytes a leer.
+	syscall
 
 	############### COMPRUEBO ERROR FATAL DE LECTURA ##############
 	bne a3, zero, error
@@ -64,14 +65,26 @@ getch:
 	# y se devuelve el numero 256.
 	beqz v0, eof
 
+	############## ACUMULO LA CANTIDAD DE BYTES LEIDOS #############
+	add t2, t2, v0
 
+	#### VERIFICO QUE SE HAYAN LEIDO LA CANTIDAD DE BYTES PEDIDOS ####
+	lw t6, ibyte
+	blt v0, t6, decrementar
+
+	b nodecrementar
+decrementar:
+	sub t6, t6, v0		# Si no se leyo la cantidad de bytes pedida
+				# leo la cantidad restante.
+
+nodecrementar:
 	############## REDUCCION DE TAMANIO DEL BUFFER #############
 	# Si el buffer no se carga completamente reduzco su tamanio
 	# a la cantidad de caracteres leidos de disco. Esto puede
 	# ocurrir solo en la ultima lectura desde disco.
 
 	lw  	t5, ibyte		# t5: Longitud buffer.
-	beq 	t5, v0, leer_caracter	# v0: Cantidad de caracteres leidos
+	beq 	t5, t2, leer_caracter	# v0: Cantidad de caracteres leidos
 					# de disco.
 	sw 	v0, ibyte		# Reduccion de buffer.
 

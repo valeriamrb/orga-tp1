@@ -56,9 +56,17 @@ palindrome:
 	sw	a2, 48($fp)	# a2: File desciptor de archivo de salida.
 	sw	a3, 52($fp)	# a3: Tamanio en bytes del buffer de salida.
 
+	# Reserva de registro S0
+	sw 	s0, 36($fp)
+
+
 	# Retorno:
 	# v0 : Devuelve 1 si el procesamiento fue finalizado
 	# exitosamente, 0 en caso contrario
+
+	################ INICIO #################
+	li s0, 1 # inicialmente no hay error de mymalloc
+		 # si hay error se convierte en cero
 
 	################ CREO EL BUFFER DE ENTRADA #################
 	sw 	a1, ibyte		# Guardo tamanio buffer entrada
@@ -67,6 +75,12 @@ palindrome:
 	lw 	a0, 44($fp)		# a0: Tamanio de buffer en bytes
 	jal 	mymalloc
 
+	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
+	bne	v0, zero, guardarpunteroentrada
+	b 	error
+
+guardarpunteroentrada:
+	########### GUARDO PUNTERO A BUFFER DE ENTRADA ############
 	sw 	v0, buffer_entrada	# Guardo puntero a memoria alocada
 					# en variable global
 
@@ -79,6 +93,13 @@ palindrome:
 	lw 	a0, 52($fp)		# 52($fp): Tamanio en bytes del buffer de salida.
 	jal 	mymalloc
 
+	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
+	bne	v0, zero, guardarpunterosalida
+	li 	s0, 0 # Si hay error seteo en cero
+	b 	borrarbufferentrada
+
+guardarpunterosalida:
+	########### GUARDO PUNTERO A BUFFER DE SALIDA ############
 	sw 	v0, buffer_salida	# Guardo puntero a memoria alocada
 					# en variable global
 
@@ -183,29 +204,37 @@ fin:
 	lw 	a0, 48($fp)	# a0: File desciptor de archivo de salida.
 	jal 	flush
 
-	############### ELIMINO EL BUFFER DE ENTRADA ###############
-	lw 	a0, buffer_entrada
+
+	############### ELIMINO EL BUFFER DE PROCESAMIENTO ###############
+	lw 	a0, buffer_procesamiento
 	jal 	myfree
 
 	############### ELIMINO EL BUFFER DE SALIDA ###############
 	lw 	a0, buffer_salida
 	jal 	myfree
 
-	############### ELIMINO EL BUFFER DE PROCESAMIENTO ###############
-	lw 	a0, buffer_procesamiento
+borrarbufferentrada:
+	############### ELIMINO EL BUFFER DE ENTRADA ###############
+	lw 	a0, buffer_entrada
 	jal 	myfree
+
+	#Si hubo error de creacion de buffer de salida
+	beqz 	s0, error
 
 	# Si llegue hasta aca el procesamiento fue exitoso y devuelvo 1
 	li v0, 1
 	b salir
 
 error:
-	li v0, 0 # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
+	li v0, 0 # Si putchProcesamiento o si mymalloc no fue exitoso devuelvo 0 y finaliza el programa
 
 salir:
 
 	####################### FIN PALINDROME #####################
 
+	# Recupero registro s0
+	lw 	s0, 36($fp)
+	
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)
