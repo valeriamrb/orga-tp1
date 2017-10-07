@@ -32,6 +32,9 @@ flush:
 
 	move $fp, sp
 
+	# Reserva de registro s0
+	sw 	s0, 36($fp)
+
 	##################### ARGUMENTOS #######################
 	sw	a0, 40($fp)	# a0: File desciptor de archivo de salida.
 
@@ -39,20 +42,45 @@ flush:
 	# En caso de exito se devuelve un 1
 	# Si ocurre un error fatal de escritura se devuelve un 0.
 
+	##########################################
+	lw 	s0, offset_salida	#Cantidad de bytes a leer en cada iteracion de loop
+
+loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
+	# de caracteres solicitados a putch
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
 	lw a0, 40($fp)		# a0: File desciptor de archivo de salida.
 	lw a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
-	lw a2, offset_salida	#offset_salida: cantidad de bytes a guardar
+	move a2, s0	#offset_salida: cantidad de bytes a guardar
 	syscall			#TODO: Verificar A3
 
 	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
 	bne a3, zero, error
+
+	################:3
+	# Si no hay error....
+	#### VERIFICO QUE SE HAYAN ESCRITO LA CANTIDAD DE BYTES PEDIDOS ####
+	blt v0, s0, decrementar
+
+	b nodecrementar
+decrementar:
+	sub s0, s0, v0		# Si no se leyo la cantidad de bytes pedida
+	b loop			# leo la cantidad restante.
+
+nodecrementar:
+
+	################:3
+
 	li v0, 1
 	b fin
+
 	###########FIN CARGAR ARCHIVO DESDE BUFFER###################
 error:	li v0, 0
 fin:
+
+	# Recupero registro s0
+	lw 	s0, 36($fp)
+	
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)

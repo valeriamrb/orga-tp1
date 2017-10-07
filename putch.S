@@ -96,7 +96,7 @@ decrementar:
 
 nodecrementar:
 
-	################>:3
+	################:3
 	sw zero, offset_salida #reseteo el offset.
 
 	li v0, 1	# En caso de exito devuelvo 1
