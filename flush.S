@@ -50,9 +50,9 @@ loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
 	lw a0, 40($fp)		# a0: File desciptor de archivo de salida.
-	lw a1, buffer_salida	#puntero al buffer desde donde leer  // TODO: Perdimos a0
+	lw a1, buffer_salida	#puntero al buffer desde donde leer 
 	move a2, s0	#offset_salida: cantidad de bytes a guardar
-	syscall			#TODO: Verificar A3
+	syscall
 
 	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
 	bne a3, zero, error
@@ -80,7 +80,7 @@ fin:
 
 	# Recupero registro s0
 	lw 	s0, 36($fp)
-	
+
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)

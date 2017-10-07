@@ -54,10 +54,10 @@ myrealloc:
 
 	# Si la nueva longitud a2 no es suficiente para reallocar se devuelve un 0
 	bge 	a2, a1, reservarMemoria
-	
+
 	li 	v0, 0	#No es posible reallocar => retorno 0
 	b fin
-	
+
 
 	############### RESERVO NUEVO BLOQUE DE MEMORIA #############
 reservarMemoria:
@@ -67,11 +67,11 @@ reservarMemoria:
 	sw 	v0, 16($fp)	# 16($fp): Puntero al nuevo bloque de memoria reservado
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, copiarContenido
-	
+	bne	v0, zero, copiarContenido  // TODO: Comparar contra -1 !!!!!!
+
 	li 	v0, 0	#No es posible reallocar => retorno 0
 	b fin
-	
+
 
 	#### COPIO EL CONTENIDO DEL BLOQUE DE MEMORIA ANTERIOR  #####
 	################### EN EL NUEVO BLOQUE ######################

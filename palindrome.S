@@ -76,7 +76,7 @@ palindrome:
 	jal 	mymalloc
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, guardarpunteroentrada
+	bne	v0, zero, guardarpunteroentrada  // TODO: Comparar contra -1 !!!!!!
 	b 	error
 
 guardarpunteroentrada:
@@ -94,7 +94,7 @@ guardarpunteroentrada:
 	jal 	mymalloc
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, guardarpunterosalida
+	bne	v0, zero, guardarpunterosalida   // TODO: Comparar contra -1 !!!!!!
 	li 	s0, 0 # Si hay error seteo en cero
 	b 	borrarbufferentrada
 
@@ -108,7 +108,7 @@ guardarpunterosalida:
 	jal 	mymalloc
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, guardarpunteroprocesamiento
+	bne	v0, zero, guardarpunteroprocesamiento    // TODO: Comparar contra -1 !!!!!!
 	li 	s0, 0 # Si hay error seteo en cero
 	b 	borrarbuffersalida
 
