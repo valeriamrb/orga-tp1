@@ -45,16 +45,19 @@ putchProcesamiento:
 	#      Devuelve 0 en caso de error durante el procesamiento.
 
 	#################### PSEUDOCODIGO ###########################
+	##	if(offset_procesamiento > pbyte) {
+	##	//Si no hay espacio, en el buffer de procesamiento, para el
+	##	//nuevo caracter duplico el tamaño del buffer.
+	##		v0 = myrealloc()
+	##		if(v0 == -1) {
+	##			return 0
+	## 		}
+	##	}
 	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
+	##	t3 = pbyte + offset_procesamiento
+	##	t3[0] = a1 //guardo el caracter//
+	##	offset_procesamiento = offset_procesamiento + 1
+	##	return 1
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
 
