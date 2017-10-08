@@ -49,21 +49,21 @@ descargarPalabra:
 	# En caso de exito se devuelve un 1
 
 	#################### PSEUDOCODIGO ###########################
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
+	## while(t0 <= t1) {
+	##	 v0 = putch(a1) //a1: caracter a guardar en archivo de salida
+	##	 if(v0 = 0) {
+	##		 //Si no se pudo guardar el caracter devuelvo 0
+	##		 return 0
+	##	 }
+	##	 t0 = t0 + 1
+	## }
+	##	putch(caracter_fin_de_linea)
+	##	return 1
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
 	lw t0, buffer_procesamiento
 	lw t1, offset_procesamiento
-	sub t1, t1, 1	
+	sub t1, t1, 1
 	add t1, t1, t0
 loop:
 	# Llamo a funcion putch y escribo caracter en archivo de salida
