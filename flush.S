@@ -43,21 +43,26 @@ flush:
 	# Si ocurre un error fatal de escritura se devuelve un 0.
 
 	##########################################
-	lw 	s0, offset_salida	#Cantidad de bytes a leer en cada iteracion de loop
 
 	#################### PSEUDOCODIGO ###########################
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
+	##	cantidad_bytes = offset_salida
+	##	[v0, a3] = write(a0, buffer_salida, cantidad_bytes)
+	##	if(a3 != 0){
+	##		//Se produjo error de escritura
+	##		return 0
+	##	}
+	##	while(v0 < cantidad_bytes) {
+	##	    //Si no se leyo la cantidad de bytes pedida, leo la cantidad restante
+	##			cantidad_bytes = cantidad_bytes - v0
+	##			[v0, a3] = write(a1, buffer_salida, cantidad_bytes)
+	##			if(a3 != 0){
+	##				return 0
+	##			}
+	##	}
+	##	return 1
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
+	lw 	s0, offset_salida	#Cantidad de bytes a leer en cada iteracion de loop
 
 loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 	# de caracteres solicitados a putch
@@ -82,8 +87,6 @@ decrementar:
 	b loop			# leo la cantidad restante.
 
 nodecrementar:
-
-	################:3
 
 	li v0, 1
 	b fin

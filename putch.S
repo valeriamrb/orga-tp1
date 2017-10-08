@@ -50,16 +50,29 @@ putch:
 	# En caso de exito se devuelve un 1.
 
 	#################### PSEUDOCODIGO ###########################
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
-	##
+	##	t3 = buffer_salida + 1 //t3: puntero de escritura de buffer
+	##	t3[0] = a1 //guardo el caracter leido en la posicion correspondiente del buffer//
+	##	offset_salida = offset_salida + 1
+	##	if(offset_salida < obyte) {
+	##		//Si no se lleno el buffer de salida, retorno exitoso
+	##		return 1
+	##	}
+	##	//Si se lleno el buffer de salida lo cargo en disco
+	##	cantidad_bytes = obytes
+	##	[v0, a3] = write(a0, buffer_salida, cantidad_bytes)
+	##	if(a3 != 0){
+	##		//Se produjo error de escritura
+	##		return 0
+	##	}
+	##	while(v0 < cantidad_bytes) {
+	##	    //Si no se leyo la cantidad de bytes pedida, leo la cantidad restante
+	##			cantidad_bytes = cantidad_bytes - v0
+	##			[v0, a3] = write(a0, buffer_salida, cantidad_bytes)
+	##			if(a3 != 0){
+	##				return 0
+	##			}
+	##	}
+	##	return 1
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
 
@@ -68,7 +81,7 @@ guardar_c:
 	lw t0, buffer_salida
 	lw t1, offset_salida
 	add t3, t0, t1		#t3 = puntero de escritura de buffer
-	sb a1, 0(t3)		#guardo el caracter leido en la posicion correspondiente del buffer
+	sb a1, 0(t3)			#guardo el caracter leido en la posicion correspondiente del buffer
 
 	############## AVANCE DE OFFSET #############
 	lw t0, offset_salida
@@ -94,7 +107,7 @@ loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 	lw a0, 40($fp)
 	lw a1, buffer_salida	#a1: Puntero donde guardar datos leidos.
 	move a2, s0		#obytes: cantidad de bytes a guardar
-	syscall			#TODO: Verificar A3
+	syscall
 
 	############### COMPRUEBO ERROR FATAL DE ESCRITURA ##############
 	bne a3, zero, error
@@ -106,11 +119,9 @@ loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 	b nodecrementar
 decrementar:
 	sub s0, s0, v0		# Si no se leyo la cantidad de bytes pedida
-	b loop			# leo la cantidad restante.
+	b loop						# leo la cantidad restante.
 
 nodecrementar:
-
-	################:3
 	sw zero, offset_salida #reseteo el offset.
 
 	li v0, 1	# En caso de exito devuelvo 1
