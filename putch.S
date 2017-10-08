@@ -49,6 +49,20 @@ putch:
 	# Si ocurre un error fatal de escritura se devuelve un 0.
 	# En caso de exito se devuelve un 1.
 
+	#################### PSEUDOCODIGO ###########################
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
+
 	############# GUARDAR CARACTER EN EL BUFFER ############
 guardar_c:
 	lw t0, buffer_salida

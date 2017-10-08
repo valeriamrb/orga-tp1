@@ -44,6 +44,20 @@ putchProcesamiento:
 	# v0 : Devuelve 1 si el procesamiento fue finalizado exitosamente
 	#      Devuelve 0 en caso de error durante el procesamiento.
 
+	#################### PSEUDOCODIGO ###########################
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
+
 guardar_c:
 	####### COMPRUEBO QUE HAYA ESPACIO PARA EL NUEVO CARACTER ########
 	lw 	t0, pbyte			# t0: Longitud del buffer de procesamiento.

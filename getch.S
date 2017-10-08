@@ -36,6 +36,20 @@ getch:
 
 	move 	$fp, sp
 
+	#################### PSEUDOCODIGO ###########################
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
+
 	######################## INICIO GETCH ######################
 	# PARAMETROS:
 	sw	a0, 40($fp)
@@ -89,7 +103,7 @@ no_eof:
 	add t2, t2, v0
 
 	#### VERIFICO QUE SE HAYAN LEIDO LA CANTIDAD DE BYTES PEDIDOS ####
-	blt v0, s0, decrementar  #TODO: ERRRRROR!!!!
+	blt v0, s0, decrementar
 
 	b nodecrementar
 decrementar:

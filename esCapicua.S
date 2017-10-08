@@ -41,11 +41,29 @@ esCapicua:
 	# t3: primer caracter del buffer de procesamiento
 	# t4: ultimo caracter del buffer de procesamiento
 	# retorna 1 si es capicua, o en caso contrario
-	
+
+	#################### PSEUDOCODIGO ###########################
+	##	t2 = t2 - 1
+	##	t1 = t1 + t2
+	##	while (t0 <= t1) {
+	##		t0[0] = t3
+	##		t1[0] = t4
+	##		if(t3 != t4) {
+	##		//La palabra no es capicua//
+	##			return 0
+	##		}
+	##		t0 = t0 + 1
+	##		t1 = t1 - 1
+	##	}
+	##	//La palabra es capicua//
+	##	return 1
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
+
 	lw t0, buffer_procesamiento
 	lw t1, buffer_procesamiento
 	lw t2, offset_procesamiento
-	sub t2, t2, 1    #TODO; VERRRRRRRR
+	sub t2, t2, 1
 	add t1, t1, t2
 
 loop:
@@ -54,7 +72,7 @@ loop:
 	lb t4, 0(t1)
 
 	bne t3, t4, noEsCapicua
-	
+
 	add t0, t0, 1
 	sub t1, t1, 1
 

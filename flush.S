@@ -45,12 +45,26 @@ flush:
 	##########################################
 	lw 	s0, offset_salida	#Cantidad de bytes a leer en cada iteracion de loop
 
+	#################### PSEUDOCODIGO ###########################
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
+
 loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 	# de caracteres solicitados a putch
 	############CARGAR ARCHIVO DESDE BUFFER####################
 	li v0, SYS_write
 	lw a0, 40($fp)		# a0: File desciptor de archivo de salida.
-	lw a1, buffer_salida	#puntero al buffer desde donde leer 
+	lw a1, buffer_salida	#puntero al buffer desde donde leer
 	move a2, s0	#offset_salida: cantidad de bytes a guardar
 	syscall
 

@@ -40,7 +40,16 @@ esCaracterValido:
 
 	sw	a0, 40($fp)
 
-	#hay que definir las mascaras pero no encontramos la sintaxis
+	#################### PSEUDOCODIGO ###########################
+	##	if ((minuscula > 96 && minuscula < 123) ||
+	##			(minuscula > 47 && minuscula < 58)  ||
+	##    	minuscula == 45 || minuscula == 95  ||
+	##    	minuscula == '\0'){
+	##				return 1;
+	##	}
+	##  return 0;
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
 	#m96  : 1100000
 	#m123 : 1111011
 	#m47  : 0x0000 0101111
@@ -58,27 +67,27 @@ esCaracterValido:
 
 	#Validar Letras Minusculas
 	ble a0, t1, ValidarNumeros
-	
+
 	blt a0, t2, esValido
-	
+
 
 ValidarNumeros:
 	blt a0, t3, ValidarMayusculas
-	
+
 	blt a0, t5, esValido
-	
+
 
 ValidarMayusculas:
 	ble a0, t7, ValidarGuiones
-	
+
 	blt a0, t8, esValido
-	
+
 
 ValidarGuiones:
 	beq a0, t4, esValido
-	
+
 	beq a0, t6, esValido
-	
+
 
 	#Si paso por todas las validaciones sin saltar a es Valido devuelvo 0
 	li v0, 0

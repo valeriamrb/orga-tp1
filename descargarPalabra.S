@@ -48,9 +48,22 @@ descargarPalabra:
 	# Si ocurre un error fatal de escritura se devuelve un 0.
 	# En caso de exito se devuelve un 1
 
+	#################### PSEUDOCODIGO ###########################
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	##
+	################# FIN BLOQUE DE PSEUDOCODIGO ###############
+
 	lw t0, buffer_procesamiento
 	lw t1, offset_procesamiento
-	sub t1, t1, 1	# TODO: ver
+	sub t1, t1, 1	
 	add t1, t1, t0
 loop:
 	# Llamo a funcion putch y escribo caracter en archivo de salida
