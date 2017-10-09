@@ -33,8 +33,38 @@ getch:
 	# Reserva de registro s0
 	sw 	s0, 36($fp)
 
-
 	move 	$fp, sp
+
+	####################### STACK FRAME ######################
+	#	+---------------+
+	# 52	|		|	\
+	#	+---------------+	|
+	# 48	|		|	|
+	#	+---------------+	|	ABA CALLER
+	# 44	|		|	|
+	#	+---------------+	|
+	# 40	|	a0	|	/
+	# 	+---------------+
+	# 36	|	s0	|	\
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|  t2(Backup)	|	/
+	# 	+---------------+
+	# 12	|		|	\
+	# 	+---------------+	|
+	# 08	|		|	|
+	# 	+---------------+	|	ABA CALLEE
+	# 04	|		|	|
+	# 	+---------------+	|
+	# 00	|		|	/
+	# 	+---------------+
 
 	#################### PSEUDOCODIGO ###########################
 	##	 // Si el buffer de entrada no esta vacio...
@@ -113,8 +143,8 @@ getch:
 
 	######################## INICIO GETCH ######################
 	# PARAMETROS:
-	sw	a0, 40($fp)
-	# a0: File desciptor de archivo de entrada.
+	sw	a0, 40($fp)	# a0: File desciptor de archivo de entrada.
+
 	# RETORNO:
 	# v0: Caracter leido desde el buffer.
 	# Si se alcanza un EOF se devuelve un 256.

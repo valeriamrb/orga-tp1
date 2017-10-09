@@ -35,6 +35,37 @@ myrealloc:
 
 	move 	$fp, sp
 
+	####################### STACK FRAME ######################
+	#	+---------------+
+	# 52	|		|	\
+	#	+---------------+	|
+	# 48	|	a2	|	|
+	#	+---------------+	|	ABA CALLER
+	# 44	|	a1	|	|
+	#	+---------------+	|
+	# 40	|	a0	|	/
+	# 	+---------------+
+	# 36	|		|	\
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|  v0 (Backup)	|	/
+	# 	+---------------+
+	# 12	|		|	\
+	# 	+---------------+	|
+	# 08	|		|	|
+	# 	+---------------+	|	ABA CALLEE
+	# 04	|		|	|
+	# 	+---------------+	|
+	# 00	|		|	/
+	# 	+---------------+
+
 	######################## PARAMETROS #########################
 	# Descripcion:
 	# Crea un nuevo bloque de memoria con los datos del bloque
@@ -93,6 +124,7 @@ reservarMemoria:
 	lw 	a0, 48($fp)	# 48($fp): Tamanio de nuevo bloque de memoria a reservar
 	jal 	mymalloc
 
+	# Backup de v0
 	sw 	v0, 16($fp)	# 16($fp): Puntero al nuevo bloque de memoria reservado
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############

@@ -32,18 +32,44 @@ putch:
 
 	move $fp, sp
 
-	sw	a0, 40($fp)
-	sw	a1, 44($fp)
+	####################### STACK FRAME ######################
+	#	+---------------+
+	# 52	|		|	\
+	#	+---------------+	|
+	# 48	|		|	|
+	#	+---------------+	|	ABA CALLER
+	# 44	|	a1	|	|
+	#	+---------------+	|
+	# 40	|	a0	|	/
+	# 	+---------------+
+	# 36	|	s0	|	\
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|		|	/
+	# 	+---------------+
+	# 12	|		|	\
+	# 	+---------------+	|
+	# 08	|		|	|
+	# 	+---------------+	|	ABA CALLEE
+	# 04	|		|	|
+	# 	+---------------+	|
+	# 00	|		|	/
+	# 	+---------------+
+
+	###################### DESCRIPCION #######################
+
+	sw	a0, 40($fp)	# a0: file desciptor de archivo de salida
+	sw	a1, 44($fp)	# a1: Caracter a guardar en archivo salida
 
 	# Reserva de registro s0
 	sw 	s0, 36($fp)
-
-	###########################################################
-
-	# a0: file desciptor de archivo de salida
-	# a1: Caracter a guardar en archivo salida
-
-	#t3 = buffer_salida + offset_salida = puntero de escritura de buffer
 
 	# RETORNO:
 	# Si ocurre un error fatal de escritura se devuelve un 0.
@@ -80,8 +106,10 @@ putch:
 guardar_c:
 	lw t0, buffer_salida
 	lw t1, offset_salida
-	add t3, t0, t1		#t3 = puntero de escritura de buffer
-	sb a1, 0(t3)			#guardo el caracter leido en la posicion correspondiente del buffer
+	#t3 = buffer_salida + offset_salida = puntero de escritura de buffer
+	add t3, t0, t1
+	sb a1, 0(t3)		# Guardo el caracter leido en la posicio
+	 			# correspondiente del buffer.
 
 	############## AVANCE DE OFFSET #############
 	lw t0, offset_salida

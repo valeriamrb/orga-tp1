@@ -30,7 +30,38 @@ putchProcesamiento:
 	sw	$fp, 28(sp)
 	sw	ra, 32(sp)
 
-	move $fp, sp
+	move 	$fp, sp
+
+	####################### STACK FRAME ######################
+	#	+---------------+
+	# 52	|		|	\
+	#	+---------------+	|
+	# 48	|		|	|
+	#	+---------------+	|	ABA CALLER
+	# 44	|	a1	|	|
+	#	+---------------+	|
+	# 40	|	a0	|	/
+	# 	+---------------+
+	# 36	|		|	\
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|  t9 (Backup)	|	/
+	# 	+---------------+
+	# 12	|		|	\
+	# 	+---------------+	|
+	# 08	|		|	|
+	# 	+---------------+	|	ABA CALLEE
+	# 04	|		|	|
+	# 	+---------------+	|
+	# 00	|		|	/
+	# 	+---------------+
 
 	####################### ARGUMENTOS ######################
 	# Descripcion:
@@ -69,7 +100,7 @@ guardar_c:
 	blt 	t1, t0, guardarCaracter
 	########### DUPLICO TAMANIO DE BUFFER DE PROCESAMIENTO ###########
 	add 	t9, t0, t0
-	sw 	t9, 16($fp) # Resguardo t9 (el tamanio del nuevo bloque a reallocar)
+	sw 	t9, 16($fp) # Backup de t9 (el tamanio del nuevo bloque a reallocar)
 
 	# Preparo argumentos para llamar a myrealloc
 	lw 	a0, buffer_procesamiento
@@ -90,7 +121,7 @@ guardar_c:
 actualizarLongitudDeBuffer:
 	##### ACTUALIZO LAS LONGITUDES DEL BUFFER DE PROCESAMIENTO #######
 	sw v0, buffer_procesamiento	# Actualizo el puntero que apunta al buffer de procesamiento
-	lw t3, 16($fp)
+	lw t3, 16($fp)			# Restauro 16($fp) en t3
 	sw t3, pbyte			# Actualizo el nuevo tamanio del buffer de procesamiento
 
 	######### GUARDAR CARACTER EN EL BUFFER DE PROCESAMIENTO #########

@@ -32,15 +32,49 @@ esCapicua:
 	sw	$fp, 28(sp)
 	sw	ra, 32(sp)
 
-	move $fp, sp
+	move 	$fp, sp
 
-	#sw	a0, 40($fp)
-	#variables locales:
+	####################### STACK FRAME ######################
+	#	+---------------+
+	# 52	|		|	\
+	#	+---------------+	|
+	# 48	|		|	|
+	#	+---------------+	|	ABA CALLER
+	# 44	|		|	|
+	#	+---------------+	|
+	# 40	|		|	/
+	# 	+---------------+
+	# 36	|		|	\
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|		|	/
+	# 	+---------------+
+	# 12	|		|	\
+	# 	+---------------+	|
+	# 08	|		|	|
+	# 	+---------------+	|	ABA CALLEE
+	# 04	|		|	|
+	# 	+---------------+	|
+	# 00	|		|	/
+	# 	+---------------+
+
+	##################### DESCRIPCION #######################
+
+	# Variables locales:
 	# t0: puntero al primer caracter del buffer de procesamiento
 	# t1: puntero al ultimo caracter del buffer de procesamiento
 	# t3: primer caracter del buffer de procesamiento
 	# t4: ultimo caracter del buffer de procesamiento
-	# retorna 1 si es capicua, o en caso contrario
+
+	# RETORNO:
+	# 1 si es capicua, o en caso contrario
 
 	#################### PSEUDOCODIGO ###########################
 	##	t2 = t2 - 1
@@ -58,7 +92,6 @@ esCapicua:
 	##	//La palabra es capicua//
 	##	return 1
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
-
 
 	lw t0, buffer_procesamiento
 	lw t1, buffer_procesamiento
