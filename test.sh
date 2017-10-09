@@ -54,8 +54,8 @@ echo '---------------------- DE ENTRADA Y SALIDA -----------------------'
 
 test_fallidos=0
 test_pasados=0
-ibytes_max=10
-obytes_max=10
+ibytes_max=3
+obytes_max=3
 
 cantidad_tests=$(($ibytes_max * $obytes_max * $cantidad_archivos_entrada))
 
@@ -91,8 +91,8 @@ echo '----------------- DE ENTRADA Y SALIDA ------------------'
 
 test_fallidos=0
 test_pasados=0
-ibytes_max=10
-obytes_max=10
+ibytes_max=3
+obytes_max=3
 
 cantidad_tests=$(($ibytes_max * $obytes_max * $cantidad_archivos_entrada))
 

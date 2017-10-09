@@ -37,15 +37,76 @@ getch:
 	move 	$fp, sp
 
 	#################### PSEUDOCODIGO ###########################
+	##	 // Si el buffer de entrada no esta vacio...
+	##	if (offset_entrada != 0) {
+	##		GOTO: LEER_CARACTER_DESDE_BUFFER
+	##	}
+	##	// Si el buffer de entrada esta vacio...
+	##	else {
+	##		s0 = ibyte // Cantidad a leer en cada iteracion
+	##		t2 = 0  // Acumulador de cantidad de caracteres
+	##			// cargados a buffer de entrada.
+	##		while (true) {
+	##			[v0, a3] = read(40($fp), buffer_entrada, s0)
+	##			// Si hay un error fatal de lectura
+	##			if (a3 == 0)
+	##				return 257
+	##			// Si se alcanza EOF
+	##			if (v0 == 0) {
+	##				 // Si el buffer de entrada no esta vacio
+	##				if (t2 != 0) {
+	##					// REVISO SI EL BUFFER SE LLENO:
+	##					if (buffer_completamente_lleno) {
+	##						GOTO: LEER_CARACTER_DESDE_BUFFER
+	##					} else
+	##						// Reducir tamanio
+	##						// logico de buffer
+	##						ibyte = t2
 	##
+	##						GOTO: LEER_CARACTER_DESDE_BUFFER
+	##					}
+	##				// Si el buffer de entrada esta vacio
+	##				} else {
+	##					// Alcanzado fin de archivo
+	##					// con buffer vacio.
+	##					return 256
+	##				}
+	##			} // Si no se alcanza EOF
+	##			else {
+	##				// Acumulo cantidad de caracteres leidos
+	##				t2 = t2 + v0
+	##				// Si la cantidad leida es menor a
+	##				// la cantidad pedida...
+	##				if (v0 < s0) {
+	##					s0 = s0 - v0
+	##				} else {
+	##					// REVISO SI EL BUFFER SE LLENO:
+	##					if (buffer_completamente_lleno) {
+	##						GOTO: LEER_CARACTER_DESDE_BUFFER
+	##					} else
+	##						// Reducir tamanio
+	##						// logico de buffer
+	##						ibyte = t2
 	##
+	##						GOTO: LEER_CARACTER_DESDE_BUFFER
+	##					}
+	##				}
+	##			}
+	##		}
+	##	}
 	##
+	##	LEER_CARACTER_DESDE_BUFFER:
+	##		t0 = buffer_entrada
+	##		t1 = offset_entrada
+	##		v0 = t0[offset_entrada]
+	##		offset_entrada++
 	##
+	##		// Si se leyeron todos
+	##		los caracteres del buffer...
+	##		if (offset_entrada == ibyte)
+	##		offset_entrada = 0
 	##
-	##
-	##
-	##
-	##
+	##		return v0
 	##
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
@@ -65,13 +126,12 @@ getch:
 	lw 	t4, offset_entrada
 	bnez 	t4, leer_caracter_desde_buffer
 
-	##########################################
+	################### INCIO CARGA DE BUFFER #################
 	lw 	s0, ibyte	#Cantidad de bytes a leer en cada iteracion de loop
-	li 	t2, 0		#Cantidad total de bytes leidos en todas las iteraciones de loop.
+	li 	t2, 0		#Cantidad total de bytes cargados a buffer_entrada
 
 loop:	# Este loop se repite hasta que se pueda leer la cantidad total
-	# de caracteres solicitados a getch
-
+	# de caracteres solicitados a getch.
 
 	sw t2, 16($fp) # Backup de t2
 
@@ -84,47 +144,62 @@ loop:	# Este loop se repite hasta que se pueda leer la cantidad total
 
 	lw t2, 16($fp) # Recupero t2
 
-	############### COMPRUEBO ERROR FATAL DE LECTURA ##############
+	############# COMPRUEBO ERROR FATAL DE LECTURA ###########
 	bne a3, zero, error
 
-	###################### CONTROL DE EOF ######################
-	# Si v0 es cero entonces se alcanzo el fin de archivo
-	# y se devuelve el numero 256.
+	###################### CONTROL DE EOF ####################
+	# Si v0 es cero entonces se alcanzo el EOF...
 	bnez v0, no_eof
 
-	#caso encontrado EOF...
-	bnez t2, nodecrementar		#TODO: Gaston
-	li 	v0, 256			# devuelvo 256 en caso de
-					# alcanzar eof
+	#################### EN CASO DE EOF... ###################
+	# Si al alcanzar el EOF tengo el buffer_entrada con algun contenido
+	# tengo que ver si se lleno completamente.
+	bnez t2, verificar_si_buffer_se_lleno_completamente
+
+	# Si se alcanzo el EOF y el buffer_entrada esta vacio devuelvo
+	# el codigo de fin de archivo 256 por que no tengo ningun
+	# caracter que devolver.
+	li 	v0, 256			# devuelvo 256 en caso de alcanzar eof
 	b fin
 
 no_eof:
 	############## ACUMULO LA CANTIDAD DE BYTES LEIDOS #############
-	add t2, t2, v0
+	add t2, t2, v0	# t2: cantidad de caracteres cargados al buffer de entrada
 
 	#### VERIFICO QUE SE HAYAN LEIDO LA CANTIDAD DE BYTES PEDIDOS ####
-	blt v0, s0, decrementar
+	# Si no se leyo la cantidad pedida leo la cantidad que falta...
+	blt v0, s0, decrementar_cantidad_a_leer
+	# Si se leyo la cantidad pedida tengo que verificar si el buffer se
+	# lleno completamente.
+	b verificar_si_buffer_se_lleno_completamente
 
-	b nodecrementar
-decrementar:
+decrementar_cantidad_a_leer:
 	sub s0, s0, v0		# Si no se leyo la cantidad de bytes pedida
 	b loop			# leo la cantidad restante.
 
-nodecrementar:
-	############## REDUCCION DE TAMANIO DEL BUFFER #############
-	# Si el buffer no se carga completamente reduzco su tamanio logico
-	# a la cantidad de caracteres leidos de disco. Esto puede
-	# ocurrir solo en la ultima lectura desde disco.
-
+verificar_si_buffer_se_lleno_completamente:
 	lw  	t5, ibyte		# t5: Longitud buffer.
-	beq 	t5, t2, leer_caracter_desde_buffer	# v0: Cantidad de caracteres leidos
-					# de disco.
-	sw 	t2, ibyte		# Reduccion de buffer. //TODO: GASTON
+
+	# Si el buffer se carga completamente devuelvo el primer caracter
+	# de este normalmente.
+	# t2: Cantidad de caracteres cargados en el buffer_entrada
+	beq 	t5, t2, leer_caracter_desde_buffer
+
+	######### REDUCCION DE TAMANIO LOGICO DEL BUFFER ########
+	# Si el buffer no se carga completamente reduzco su tamanio logico
+	# a la cantidad de caracteres leidos de disco.
+	# Esto puede ocurrir solo en la ultima lectura desde disco. Ya que
+	# en el caso de que SYS_READ no pueda leer la cantidad pedida,
+	# se reintenta hasta lograr leer la cantidad deseada.
+	# Esto se hace debido a que la condicion para limpiar el buffer
+	# de entrada es haber leido todos los caracteres de dicho buffer.
+	# EL TAMANIO FISICO DEL BUFFER DE ENTRADA NO ES MODIFICADO.
+	sw 	t2, ibyte		# Reduccion logica de buffer.
 
 
 leer_caracter_desde_buffer:
 	############### LEER CARACTER DESDE EL BUFFER ##############
-	lw 	t0, buffer_entrada	# t0: Puntero al inicio del buffer.  TODO: Cambio por LW
+	lw 	t0, buffer_entrada	# t0: Puntero al inicio del buffer.
 	lw 	t1, offset_entrada	# t1: Offset en bytes en el buffer.
 	add 	t3, t0, t1		# t3: Puntero de lectura de buffer.
 	lb 	v0, 0(t3)		# v0: Devuelvo el caracter leido
@@ -133,7 +208,6 @@ leer_caracter_desde_buffer:
 	###################### AVANCE DE OFFSET ####################
 	# Incremento el puntero de offset de buffer en 1 byte para
 	# la siguiente lectura.
-
 	lw 	t0, offset_entrada
 	add 	t0, t0, 1
 	sw 	t0, offset_entrada
@@ -150,8 +224,8 @@ leer_caracter_desde_buffer:
 	sw 	zero, offset_entrada	# Reseteo de offset.
 	b	fin
 error:
-	li 	v0, 257			# devuelvo 257 en caso
-					# de error fatal de lectura
+	li 	v0, 257			# Devuelvo 257 en caso
+					# de error fatal de lectura.
 fin:
 	########################## FIN GETCH #######################
 
