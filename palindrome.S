@@ -44,8 +44,8 @@ palindrome:
 
 	move 	$fp, sp
 
-	##################### PARAMETROS ####################
-	#Descripcion:
+	####################### PARAMETROS #######################
+	# Descripcion:
 	# Localiza palabras palindromos en el archivo de entrada
 	# y las coloca en el archivo de salida separadas por un
 	# salto de linea
@@ -57,92 +57,161 @@ palindrome:
 	sw	a3, 52($fp)	# a3: Tamanio en bytes del buffer de salida.
 
 	# Reserva de registro s0
-	sw 	s0, 36($fp)
+	sw 	s0, 36($fp)	# Bandera para manejar error en mymalloc() y getch()
+				# s0 = 1 OK
+				# S0 = 0 ERROR
 
 	# Retorno:
 	# v0 : Devuelve 1 si el procesamiento fue finalizado
 	# exitosamente, 0 en caso contrario
 
-	################ PSEUDOCODIGO ##############################
-	## //Creo el buffer de entrada//
-	##	a1 = ibyte
-	## s0 = 1 //Bandera para verificar error//
-	##	v0 = mymalloc()
-	##	if(v0 != 0) {
-	## //Creo el buffer de salida//
-	##		if(v0 != 0) {
-	## 		//Creo el buffer de procesamiento//
-	##			if(v0 != 0) {
-	##				//Leo todos los caracteres del archivo de entrada y los
-	##				//imprimo en el archivo de salida//
-	##				while(v0 != 256) { //Mientras no llegue al fin de archivo//
-	##					v0 = getch() //Recibo caracter leido en v0//
-	##					if(v0 == 257) { //Verifico error en getch//
-	##						s0 = 0
-	##						break
-	##					}
-	##					if(esCaracterValido(v0)) {
-	##						//Guardo caracter en buffer_procesamiento//
-	##						putchProcesamiento(v0)
-	##					} else if ( buffer_procesamiento != vacio ) {
-	##							if(esCapicua()) {
-	##								descargarPalabra()
-	##							}
-	##					}
-	##        }
-	##				if ( buffer_procesamiento != vacio ) {
-	##						//Descargo la ultima palabra si es capicua
-	##							if(esCapicua()) {
-	##								descargarPalabra()
-	##							}
+
+	####################### STACK FRAME ######################
+	#
+	# 40
+	# 	+---------------+	\
+	# 36	|	s0	|	|
+	# 	+---------------+	|
+	# 32	|	ra	|	|
+	# 	+---------------+	|	SRA
+	# 28	|	fp	|	|
+	# 	+---------------+	|
+	# 24	|	gp	|	/
+	# 	+---------------+
+	# 20	|		|	\
+	# 	+---------------+	|	LTA
+	# 16	|   v0(backup)	|	/
+	# 	+---------------+
+	# 12	|	a3	|	\
+	# 	+---------------+	|
+	# 08	|	a2	|	|
+	# 	+---------------+	|	ABA
+	# 04	|	a1	|	|
+	# 	+---------------+	|
+	# 00	|	a0	|	/
+	# 	+---------------+
+
+
+	###################### PSEUDOCODIGO ######################
+	## s0 = 1 //Bandera para verificar error. Inicialmente no hay error.
+	##
+	## // Creo buffer de entrada
+	## v0 = mymalloc(44($fp))
+	## if(v0 != -1) {
+	## 	// Creo buffer de salida
+	##	v0 = mymalloc(52($fp))
+	##	if(v0 != -1) {
+	##		// Creo buffer de procesamiento
+	##		v0 = mymalloc(*pbyte)
+	##		if(v0 != -1) {
+	##			// Leo todos los caracteres del archivo de
+	##			// entrada
+	##			while (true) {
+	##				v0 = getch()    // Leo caracter en v0
+	##				if(v0 == 257) { // Verifico error
+	##					s0 = 0	// Error en getch()
+	##					break
 	##				}
-	##      //Descargo de buffer de salida lo que quede pendiente de escribir
-	##     //en disco//
+	##
+	##				if(v0 == 256) // Verifico EOF
+	##					break
+	##
+	##				// Si el caracter es valido lo guardo
+	##				// en el buffer de procesamiento.
+	##				if(esCaracterValido(v0)) {
+	##					putchProcesamiento(v0)
+	##				}
+	##
+	##				// Si llega un caracter invalido
+	##				// compruebo si existe una palabra
+	##				// en el buffer de procesamiento.
+	##				// Si es capicua la descargo en el
+	##				// buffer de salida.
+	##				else if ( buffer_procesamiento != vacio ) {
+	##					if(esCapicua())
+	##						descargarPalabra()
+	##					else
+	##						// Se realiza un vaciado
+	##						// logico de la palabra
+	##						// alojada en el buffer de
+	##						// procesamiento reseteando
+	##						// su puntero de escritura
+	##						// a la primer posicion.
+	##						resetOffsetProcesamiento
+	##				}
+	##        		}
+	##			// Si al buffer de procesamiento le queda
+	##			// una palabra capicua entonces la decargo
+	##			// en el buffer de salida.
+	##			if (buffer_procesamiento != vacio)
+	##				if(esCapicua())
+	##					descargarPalabra()
+	##
+	##      		// Descargo del buffer de salida los
+	##			// caracteres pendientes de
+	##			// escribir en disco.
 	##			flush()
-	##			}
-	##			borrarBufferSalida()
+	##			// Libero buffers
+	##			myfree(buffer_procesamiento)
+	##			myfree(buffer_salida)
+	##			myfree(buffer_entrada)
 	##		}
-	##		borrarBufferEntrada()
-	## }
-	##	if(s0 = 0) {
-	## 		//El procesamiento no fue realizado exitosamente//
-	## 		return 0
+	##		else { // Error al crear buffer de procesamiento
+	##			myfree(buffer_salida)
+	##			myfree(buffer_entrada)
+	##			s0 = 0 // Error en mymalloc
+	##		}
+	##	} else { // Error al crear buffer de salida
+	##		myfree(buffer_entrada)
+	##		s0 = 0 // Error en mymalloc
 	##	}
-	##	//El procesamiento fue realizado exitosamente//
-	##	return 1
-	################ FIN BLOQUE DE PSEUDOCODIGO ################
+	## } else {
+	##	// Error al crear buffer de entrada
+	##	s0 = 0 // Error en mymalloc
+	## }
+	##
+	## # Compruebo que no haya habido error de mymalloc() o getch()
+	## if(s0 = 0) {
+	## 	// El procesamiento no fue realizado exitosamente
+	## 	return 0
+	## }
+	##
+	## // El procesamiento fue realizado exitosamente
+	## return 1
+	##
 
-	################ INICIO ####################################
-	li s0, 1 # inicialmente no hay error de mymalloc
-		 			 # si hay error se convierte en cero
 
-	################ CREO EL BUFFER DE ENTRADA #################
-	sw 	a1, ibyte		# Guardo tamanio buffer entrada
-	 								# en variable global
+	######################### INICIO #########################
+	li 	s0, 1 		# Inicialmente no hay error de mymalloc.
+		 		# Si hay error se convierte en cero.
+	sw 	a1, ibyte	# Guardo tamanio buffer entrada.
 
-	lw 	a0, 44($fp)		# a0: Tamanio de buffer en bytes
+	################ CREO EL BUFFER DE ENTRADA ###############
+	lw 	a0, 44($fp)	# a0: Tamanio de buffer en bytes.
 	jal 	mymalloc
 
-	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ###########
-	bne	v0, zero, guardarpunteroentrada  // TODO: Comparar contra -1 !!!!!!
+	########## COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ##########
+	li 	t3, -1
+	bne	v0, t3, guardarpunteroentrada
 	b 	error
 
 guardarpunteroentrada:
-	########### GUARDO PUNTERO A BUFFER DE ENTRADA ############
+	########### GUARDO PUNTERO A BUFFER DE ENTRADA ###########
 	sw 	v0, buffer_entrada	# Guardo puntero a memoria alocada
-													# en variable global
+					# en la variable global buffer_entrada
 
-	################ CREO EL BUFFER DE SALIDA #################
+	################ CREO EL BUFFER DE SALIDA ################
 
 	lw 	t4, 52($fp)		# 52($fp): Tamanio en bytes del buffer de salida.
-	sw 	t4, obyte			# Guardo tamanio buffer entrada
-	 									# en variable global
+	sw 	t4, obyte		# Guardo tamanio buffer entrada
+	 				# en la variable global obyte
 
 	lw 	a0, 52($fp)		# 52($fp): Tamanio en bytes del buffer de salida.
 	jal 	mymalloc
 
-	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, guardarpunterosalida   // TODO: Comparar contra -1 !!!!!!
+	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR #########
+	li 	t3, -1
+	bne	v0, t3, guardarpunterosalida
 	li 	s0, 0 # Si hay error seteo en cero
 	b 	borrarbufferentrada
 
@@ -151,143 +220,166 @@ guardarpunterosalida:
 	sw 	v0, buffer_salida	# Guardo puntero a memoria alocada
 					# en variable global
 
-	################ CREO EL BUFFER DE PROCESAMIENTO #################
-	lw 	a0, pbyte			# a0: Tamanio de buffer en bytes
+	############ CREO EL BUFFER DE PROCESAMIENTO #############
+	lw 	a0, pbyte		# a0: Tamanio de buffer en bytes
 	jal 	mymalloc
 
-	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, guardarpunteroprocesamiento    // TODO: Comparar contra -1 !!!!!!
+	########## COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ##########
+	li 	t3, -1
+	bne	v0, t3, guardarpunteroprocesamiento
 	li 	s0, 0 # Si hay error seteo en cero
 	b 	borrarbuffersalida
 
 guardarpunteroprocesamiento:
-		########### GUARDO PUNTERO A BUFFER DE SALIDA ############
+	########### GUARDO PUNTERO A BUFFER DE SALIDA ############
 	sw 	v0, buffer_procesamiento	# Guardo puntero a memoria alocada
 						# en variable global
 
-	###### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
-	########### Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
+	##### LEO TODOS LOS CARACTERES DEL ARCHIVO DE ENTRADA #####
+	########## Y LOS IMPRIMO EN EL ARCHIVO DE SALIDA ##########
 loop:
-	# Llamo a funcion getch y recibo caracter en v0
+	###### LLAMO A FUNCION GETCH Y RECIBO CARACTER EN V0 ######
 	lw 	a0, 40($fp)	# 40($fp): File desciptor de archivo de entrada.
 	jal 	getch		#Recibo caracter leido en v0
 
-	###### COMPRUEBO ERROR DE GETCH #####
-	li t2, 257
-	beq v0, t2, error
+	################ COMPRUEBO ERROR DE GETCH #################
+	# Si v0 == 257 => Hubo un error de lectura en getch.
+	li 	t2, 257
+	beq 	v0, t2, error
 
 	# Backapeo el caracter que recibi en 16($fp)
-	sw v0, 16($fp)		#16($fp): Caracter leido
+	sw 	v0, 16($fp)		#16($fp): Caracter leido
 
-	# Si v0 == 256 entonces se acabo el archivo. Por lo tanto
-	# proceso la ultima palabra que quedo pendiente en el buffer de procesamiento
+	################ CONTROLO FIN DE ARCHIVO ##################
+	# Si v0 == 256 entonces se acabo el archivo. Pero antes de finalizar
+	# el programa tengo que verificar si quedo una ultima palabra
+	# pendiente de procesar en el buffer de procesamiento.
 	li 	t1, 256
 	beq	v0, t1, ultimaPalabra
 
+	########### VERIFICO SI EL CARACTER ES VALIDO ############
+	lw 	a0, 16($fp)		# 16($fp): caracter leido a comprobar
+	jal 	esCaracterValido
+	beqz 	v0, esInvalido		# v0: valido=1 invalido=0
 
-	############# VERIFICO SI EL CARACTER ES VALIDO ##############
-	lw a0, 16($fp)		# 16($fp): caracter leido a comprobar
-	jal esCaracterValido
-	beqz v0, esInvalido	# v0: valido=1 invalido=0
-
-
-	# Guardo caracter en buffer_procesamiento
+	####### GUARDO CARACTER EN BUFFER DE PROCESAMIENTO #######
 	lw 	a0, buffer_procesamiento	# a0: puntero al buffer de procesamiento
 	lw 	a1, 16($fp)			# 16($fp): caracter leido a guardar
 	jal 	putchProcesamiento
 
-	########## VERIFICO PUTCHPROCESAMIENTO SE REALIZO ############
-	######################## EXITOSAMENTE ########################
-	bnez v0, siguienteCaracter
-
-
-	b error # Si putchProcesamiento no fue exitoso devuelvo 0 y finaliza el programa
-
+	# VERIFICO SI PUTCHPROCESAMIENTO SE REALIZO EXITOSAMENTE #
+	bnez 	v0, siguienteCaracter
+	b 	error 			# Si putchProcesamiento no fue
+					# exitoso devuelvo 0 y
+					# finaliza el programa.
 
 siguienteCaracter:
-	# Nueva iteracion
+	##### NUEVA ITERACION PARA LEER EL SIGUIENTE CARACTER ####
 	b	loop
 
-
 esInvalido:
-	#Si el buffer no esta vacio, llamo a esCapicua:
-	lw t5, offset_procesamiento
+	########### SI EL BUFFER CONTIENE ALGUNA PALABRA #########
+	#################### LLAMO A ESCAPICUA ###################
+	lw 	t5, offset_procesamiento# Compruebo si hay alguna palabra
+					# en el buffer de procesamiento
+	beqz 	t5, loop		# Si no hay ninguna palabra vuelvo
+					# a loopear para seguir cargando
+					# el buffer de procesamiento.
+					# Este caso ocurre cuando vienen
+					# dos caracteres invalidos seguidos.
 
-	beqz t5, loop
+	############ COMPRUEBO SI LA PALABRA ES CAPICUA ##########
+	jal 	esCapicua		# capicua = 1, no capicua = 0
 
-	jal esCapicua
-	# chequeo v0
-	beqz v0 , resetOffsetProcesamiento
+	### SI NO ES CAPICUA LIMPIO EL BUFFER DE PROCESAMIENTO ###
+	beqz 	v0 , resetOffsetProcesamiento
 
-	#Si es capicua llama a descargar palabra
+	########## SI ES CAPICUA SE DESCARGA LA PALABRA ##########
+	lw 	a0, 48($fp)		# 48($fp): File desciptor de archivo de salida.
+	jal 	descargarPalabra	# Se descarga la palabra capicua desde el
+					# buffer de procesamiento hacia el buffer
+					# de salida.
 
-	lw a0, 48($fp)
-	jal descargarPalabra
-
-	####### VERIFICO ERROR EN DESCARGARPALABRA ########
-	beq v0, zero, error
+	########### VERIFICO ERROR EN DESCARGARPALABRA ###########
+	beq 	v0, zero, error		# Si hubo error devuelvo 0 y finalizo
+	 				# el programa.
 
 resetOffsetProcesamiento:
+	########## LIMPIEZA DEL BUFFER DE PROCESAMIENTO ##########
+	# En realidad se realiza una limpieza logica del buffer
+	# de procesamiento reseteando su puntero de escritura
+	# a la primer posicion de dicho buffer.
 	sw  zero, offset_procesamiento
 
-	#loopea cargando la siguiente palabra en el buffer de procesamiento
+	##### NUEVA ITERACION PARA LEER EL SIGUIENTE CARACTER ####
+	# Ahora que el buffer de procesamiento esta limpio
+	# sigo leyendo caracteres de la siguiente palabra
+	# a procesar.
 	b loop
 
-
+	# Fin del programa
 	b fin
 
-
 ultimaPalabra:
-	# Si el buffer de procesamiento esta vacio => fin del programa
-	# Sino => Verificar si el contenido del buffer de procesamiento es capicua
-	lw t5, offset_procesamiento
-	beqz t5, fin
+	### PROCESO ULTIMA PALABRA DEL BUFFER DE PROCESAMIENTO ###
+	# Antes de finalizar el programa tengo que verificar
+	# si quedo una ultima palabra pendiente de procesar
+	# en el buffer de procesamiento.
 
-	# capicua = 1, no capicua = 0
-	jal esCapicua
-	#Si no es capicua termina el programa
-	beqz v0 , fin
+	# Si el buffer de procesamiento esta vacio => Fin del programa.
+	# Sino => Verificar si la palabra en el buffer de procesamiento es capicua.
+	lw 	t5, offset_procesamiento
+	beqz 	t5, fin
 
-	#Si es capicua se descarga la palabra al buffer de salida
-	lw a0, 48($fp)		# a0: File desciptor de archivo de salida.
-	jal descargarPalabra
+	############ COMPRUEBO SI LA PALABRA ES CAPICUA ##########
+	jal 	esCapicua	# capicua = 1, no capicua = 0
+
+	# Si la palabra no es capicua termina el programa
+	beqz 	v0 , fin
+
+	# Si la palabra es capicua se descarga al buffer de salida
+	lw 	a0, 48($fp)		# a0: File desciptor de archivo de salida.
+	jal 	descargarPalabra
 
 fin:
-	# Descargo de buffer de salida lo que quede pendiente de escribir
-	# en disco.
+	############### FLUSH DEL BUFFER DE SALIDA ###############
+	# Descargo de buffer de salida los caracteres que queden
+	# pendiente de escribir en disco.
 	lw 	a0, 48($fp)	# a0: File desciptor de archivo de salida.
 	jal 	flush
 
-
-	############### ELIMINO EL BUFFER DE PROCESAMIENTO ###############
+	########### ELIMINO EL BUFFER DE PROCESAMIENTO ###########
 	lw 	a0, buffer_procesamiento
 	jal 	myfree
 
 borrarbuffersalida:
-	############### ELIMINO EL BUFFER DE SALIDA ###############
+	################ ELIMINO EL BUFFER DE SALIDA #############
 	lw 	a0, buffer_salida
 	jal 	myfree
 
 borrarbufferentrada:
-	############### ELIMINO EL BUFFER DE ENTRADA ###############
+	############### ELIMINO EL BUFFER DE ENTRADA #############
 	lw 	a0, buffer_entrada
 	jal 	myfree
 
 	#Si hubo error de creacion de buffer de salida
 	beqz 	s0, error
 
+	################ FIN EXITOSO DEL PROGRAMA ################
 	# Si llegue hasta aca el procesamiento fue exitoso y devuelvo 1
 	li v0, 1
 	b salir
 
 error:
-	li v0, 0 # Si putchProcesamiento o si mymalloc no fue exitoso devuelvo 0 y finaliza el programa
+	############## FIN NO EXITOSO DEL PROGRAMA ###############
+	li v0, 0 	# Si putchProcesamiento o si mymalloc no fue exitoso
+	 		# devuelvo 0 y finaliza el programa
 
 salir:
 
-	####################### FIN PALINDROME #####################
+	####################### FIN PALINDROME ###################
 
-	# Recupero registro s0
+	# Restauro registro s0
 	lw 	s0, 36($fp)
 
 	# restauro callee-saved regs
