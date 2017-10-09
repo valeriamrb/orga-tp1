@@ -79,7 +79,8 @@ guardar_c:
 	jal 	myrealloc
 
 	########### COMPRUEBO QUE EL REALLOC HAYA SIDO EXITOSO ###########
-	bnez v0, actualizarLongitudDeBuffer	#TODO: Comaprar contra -1!!!!!
+	li 	t5, -1
+	bne 	v0, t5, actualizarLongitudDeBuffer
 
 	# Si el realloc no fue exitoso...
 	li v0, 0		# En caso de error devuelvo 0

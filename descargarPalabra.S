@@ -105,7 +105,7 @@ error:
 fin:
 
 	######### RESETEO OFFSET DE PROCESAMIENTO A CERO ##########
-	sw zero, offset_procesamiento	# TODO: ver
+	sw zero, offset_procesamiento
 
 	# restauro callee-saved regs
 	lw	gp, 24(sp)

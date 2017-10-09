@@ -48,14 +48,43 @@ myrealloc:
 
 	# Retorno:
 	# v0 : Puntero al nuevo bloque de memoria reservada. Si no se puede
-	# reallocar se devuelve un 0
+	# reallocar se devuelve un -1
 
-	#################### COMPRUEBO QUE A2 >= A1 #################
+	#################### PSEUDOCODIGO ########################
+	##	// Si el tamanio nuevo es menor al viejo
+	##	if (a2 < a1) {
+	##		return -1
+	##	} else {
+	##		vo = mymalloc(48($fp))
+	##		*16($fp) = v0
+	##		// Si hay un error al allocar
+	##		if (v0 == -1) {
+	##			return -1
+	##		} else {
+	##			t0 = *40($fp) // Puntero al bloque viejo.
+	##			t1 = *16($fp) // Puntero al bloque nuevo.
+	##			t2 = *44($fp) + t0 // Puntero al siguiente del
+	##					   // ultimo caracter del
+	##					   // bloque viejo.
+	##			// Copio caracteres...
+	##			do {
+	##				t4 = *t0
+	##				*t1 = t4
+	##				t0++
+	##				t1++
+	##			} while (t0 < t2)
+	##			// Devuelvo puntero al bloque nuevo...
+	##			myfree(40($fp))
+	##			v0 = *16($fp)
+	##			return v0
+	##		}
+	##	}
 
+	################# COMPRUEBO QUE A2 >= A1 #################
 	# Si la nueva longitud a2 no es suficiente para reallocar se devuelve un 0
 	bge 	a2, a1, reservarMemoria
 
-	li 	v0, 0	#No es posible reallocar => retorno 0
+	li 	v0, -1	#No es posible reallocar => retorno -1
 	b fin
 
 
@@ -67,11 +96,11 @@ reservarMemoria:
 	sw 	v0, 16($fp)	# 16($fp): Puntero al nuevo bloque de memoria reservado
 
 	########### COMPRUEBO QUE SE HAYA PODIDO ALLOCAR ############
-	bne	v0, zero, copiarContenido  // TODO: Comparar contra -1 !!!!!!
+	li 	t5, -1
+	bne	v0, t5, copiarContenido
 
-	li 	v0, 0	#No es posible reallocar => retorno 0
+	li 	v0, -1		#No es posible reallocar => retorno -1
 	b fin
-
 
 	#### COPIO EL CONTENIDO DEL BLOQUE DE MEMORIA ANTERIOR  #####
 	################### EN EL NUEVO BLOQUE ######################
