@@ -1,0 +1,7 @@
+"test-hexa" es un archivo de 16 bytes
+(16 caracteres) con caracteres no imprimibles
+que contiene el palindrome "oso".
+(Fue generado con wxHexEditor 0.23 beta)
+
+hexa: 00 00 00 00 16 00 00 00 17 6F 73 6F 00 07 00 00
+char:		  	        o  s  o    
