@@ -3,6 +3,9 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
+#define GETCH_EOF 256
+#define GETCH_ERROR 257
+
 .text
 
 .abicalls
@@ -36,6 +39,10 @@ getch:
 	move 	$fp, sp
 
 	####################### STACK FRAME ######################
+	# En base a mipsabi.pdf pagina 27, tomamos a las syscalls
+	# como funciones ordinarias. Por lo que necesitamos
+	# reservar ra en el SRA y crear el ABA del callee.
+
 	#	+---------------+
 	# 52	|		|	\
 	#	+---------------+	|
@@ -80,7 +87,7 @@ getch:
 	##			[v0, a3] = read(40($fp), buffer_entrada, s0)
 	##			// Si hay un error fatal de lectura
 	##			if (a3 == 0)
-	##				return 257
+	##				return GETCH_ERROR
 	##			// Si se alcanza EOF
 	##			if (v0 == 0) {
 	##				 // Si el buffer de entrada no esta vacio
@@ -141,14 +148,17 @@ getch:
 	################# FIN BLOQUE DE PSEUDOCODIGO ###############
 
 
-	######################## INICIO GETCH ######################
+	###################### DESCRIPCION #######################
+	# Lee un caracter del bufer de entrada. Si el buffer esta
+	# vacio, se carga dicho buffer desde disco.
+
 	# PARAMETROS:
 	sw	a0, 40($fp)	# a0: File desciptor de archivo de entrada.
 
 	# RETORNO:
 	# v0: Caracter leido desde el buffer.
-	# Si se alcanza un EOF se devuelve un 256.
-	# Si ocurre un error fatal de lectura se devuelve un 257.
+	# Si se alcanza un EOF se devuelve un GETCH_EOF.
+	# Si ocurre un error fatal de lectura se devuelve un GETCH_ERROR.
 
 	################## DECIDO SI CARGO BUFFER ##################
 	# Si (offset_entrada == 0) => CARGA DE BUFFER DESDE ARCHIVO.
@@ -187,9 +197,9 @@ loop:	# Este loop se repite hasta que se pueda leer la cantidad total
 	bnez t2, verificar_si_buffer_se_lleno_completamente
 
 	# Si se alcanzo el EOF y el buffer_entrada esta vacio devuelvo
-	# el codigo de fin de archivo 256 por que no tengo ningun
+	# el codigo de fin de archivo GETCH_EOF por que no tengo ningun
 	# caracter que devolver.
-	li 	v0, 256			# devuelvo 256 en caso de alcanzar eof
+	li 	v0, GETCH_EOF			# devuelvo GETCH_EOF en caso de alcanzar eof
 	b fin
 
 no_eof:
@@ -254,7 +264,7 @@ leer_caracter_desde_buffer:
 	sw 	zero, offset_entrada	# Reseteo de offset.
 	b	fin
 error:
-	li 	v0, 257			# Devuelvo 257 en caso
+	li 	v0, GETCH_ERROR		# Devuelvo GETCH_ERROR en caso
 					# de error fatal de lectura.
 fin:
 	########################## FIN GETCH #######################

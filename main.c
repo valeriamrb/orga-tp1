@@ -7,7 +7,7 @@
  #include <getopt.h>
 
 
-#define VERSION "0.1.0"
+#define VERSION "0.9.0"
 
 int palindrome(int ifd, int ibytes, int ofd, int obytes);
 
@@ -37,13 +37,23 @@ void mostrar_version()
 
 int error_parametros_incorrectos()
 {
-	fprintf(stderr, "erro fatal: Los parametros son incorrectos!\n");
+	fprintf(stderr, "Los parametros son incorrectos!\n");
 	mostrar_usage();
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 
 void print_usage() {
 	printf("Usage: rectangle [ap] -l num -b num\n");
+}
+
+int isnumber(char* str) {
+	int i;
+	if (strlen(str) == 0)
+		return 0;
+	for (i = 0; i < strlen(str); i++)
+        	if (!isdigit((int)str[i]))
+	        	return 0;
+	return 1;
 }
 
 int main(int argc, char *argv[]) {
@@ -58,7 +68,7 @@ int main(int argc, char *argv[]) {
 	FILE* input_handler = NULL;
 	FILE* output_handler = NULL;
 
-	int error_en_palindrome = 0;
+	int proceso_ok = 0;
 
 	static struct option long_options[] = {
 		{"version",	no_argument,		0,	'v' },
@@ -82,12 +92,17 @@ int main(int argc, char *argv[]) {
 			break;
 			case 'o' : output = optarg;
 			break;
-			case 'I' : ibuff = atoi(optarg);
+			case 'I' : if (isnumber(optarg) && atoi(optarg) > 0)
+			 		ibuff = atoi(optarg);
+				   else
+				   	error_parametros_incorrectos();
 			break;
-			case 'O' : obuff = atoi(optarg);
+			case 'O' : if (isnumber(optarg) && atoi(optarg) > 0)
+			 		obuff = atoi(optarg);
+				   else
+				   	error_parametros_incorrectos();
 			break;
-			default: mostrar_usage();
-			exit(EXIT_FAILURE);
+			default: error_parametros_incorrectos();
 		}
 	}
 
@@ -139,18 +154,12 @@ int main(int argc, char *argv[]) {
 	if (!obuff)
 		obuff = 1;
 
-	// printf("Procesando...\n");
-	// printf("ibuff: %d\n", ibuff);
-	// printf("obuff: %d\n", obuff);
-	// printf("input: %s, fileno: %d\n", input, fileno(input_handler));
-	// printf("output: %s, fileno: %d\n", output, fileno(output_handler));
+	proceso_ok = palindrome(fileno(input_handler), ibuff, fileno(output_handler), obuff);
 
-	error_en_palindrome = palindrome(fileno(input_handler), ibuff, fileno(output_handler), obuff);
-
-	if (!error_en_palindrome)
+	if (!proceso_ok)
 		fprintf(stderr, "Hubo un error en el procesamiento\n");
 
-	// Cierro los archivos que no sean entrada o salida estandar
+	//Cierro los archivos que no sean entrada o salida estandar
 	if (input_handler && input_handler != stdin)
 		fclose(input_handler);
 

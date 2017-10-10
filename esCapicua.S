@@ -15,7 +15,7 @@
 
 esCapicua:
 	#debugging info: descripcion del stack frame
-	.frame $fp, 40, ra		# ver que a lo mejor 40 no es un buen numero
+	.frame $fp, 8, ra		# ver que a lo mejor 40 no es un buen numero
 
 	#bloque para codigo pic
 	.set noreorder
@@ -23,49 +23,27 @@ esCapicua:
 	.set reorder
 
 	#creo stack frame
-	subu	sp, sp, 40
+	subu	sp, sp, 8
 
 	#bloque para codigo pic
-	.cprestore 24
+	.cprestore 0
 
 	# salvando el callee
-	sw	$fp, 28(sp)
-	sw	ra, 32(sp)
+	sw	$fp, 4(sp)
 
 	move 	$fp, sp
 
 	####################### STACK FRAME ######################
-	#	+---------------+
-	# 52	|		|	\
-	#	+---------------+	|
-	# 48	|		|	|
-	#	+---------------+	|	ABA CALLER
-	# 44	|		|	|
-	#	+---------------+	|
-	# 40	|		|	/
+
 	# 	+---------------+
-	# 36	|		|	\
-	# 	+---------------+	|
-	# 32	|	ra	|	|
+	# 04	|	fp	|	\
 	# 	+---------------+	|	SRA
-	# 28	|	fp	|	|
-	# 	+---------------+	|
-	# 24	|	gp	|	/
-	# 	+---------------+
-	# 20	|		|	\
-	# 	+---------------+	|	LTA
-	# 16	|		|	/
-	# 	+---------------+
-	# 12	|		|	\
-	# 	+---------------+	|
-	# 08	|		|	|
-	# 	+---------------+	|	ABA CALLEE
-	# 04	|		|	|
-	# 	+---------------+	|
-	# 00	|		|	/
+	# 00	|	gp	|	/
 	# 	+---------------+
 
 	##################### DESCRIPCION #######################
+	# Determina si la pabra alojada en el buffer de procesamiento
+	# es capicua.
 
 	# Variables locales:
 	# t0: puntero al primer caracter del buffer de procesamiento
@@ -118,11 +96,10 @@ noEsCapicua:
 
 fin:
 	# restauro callee-saved regs
-	lw	gp, 24(sp)
-	lw	$fp, 28(sp)
-	lw	ra, 32(sp)
+	lw	gp, 0(sp)
+	lw	$fp, 4(sp)
 	# destruyo stack frame
-	addu	sp, sp, 40
+	addu	sp, sp, 8
 	# vuelvo a funcion llamante
 	jr	ra
 

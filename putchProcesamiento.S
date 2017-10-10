@@ -65,7 +65,9 @@ putchProcesamiento:
 
 	####################### ARGUMENTOS ######################
 	# Descripcion:
-	# Coloca un caracter en el buffer de procesamiento.
+	# Coloca un caracter en el buffer de procesamiento. Si el
+	# buffer de procesamiento se llena, su tamanio se duplica
+	# para dar lugar al caracter.
 
 	#Arguemetnos:
 	sw	a0, 40($fp)	# a0: puntero al buffer de procesamiento
@@ -114,33 +116,33 @@ guardar_c:
 	bne 	v0, t5, actualizarLongitudDeBuffer
 
 	# Si el realloc no fue exitoso...
-	li v0, 0		# En caso de error devuelvo 0
+	li 	v0, 0		# En caso de error devuelvo 0
 
-	b fin
+	b 	fin
 
 actualizarLongitudDeBuffer:
 	##### ACTUALIZO LAS LONGITUDES DEL BUFFER DE PROCESAMIENTO #######
-	sw v0, buffer_procesamiento	# Actualizo el puntero que apunta al buffer de procesamiento
-	lw t3, 16($fp)			# Restauro 16($fp) en t3
-	sw t3, pbyte			# Actualizo el nuevo tamanio del buffer de procesamiento
+	sw 	v0, buffer_procesamiento	# Actualizo el puntero que apunta al buffer de procesamiento
+	lw 	t3, 16($fp)			# Restauro 16($fp) en t3
+	sw 	t3, pbyte			# Actualizo el nuevo tamanio del buffer de procesamiento
 
 	######### GUARDAR CARACTER EN EL BUFFER DE PROCESAMIENTO #########
 guardarCaracter:
-	lw t0, buffer_procesamiento
-	lw t1, offset_procesamiento
-	add t3, t0, t1		#t3 = buffer_procesamiento + offset_procesamiento = puntero de escritura de buffer
+	lw 	t0, buffer_procesamiento
+	lw 	t1, offset_procesamiento
+	add 	t3, t0, t1		#t3 = buffer_procesamiento + offset_procesamiento = puntero de escritura de buffer
 
 	# Guardo el caracter leido en la posicion correspondiente del buffer
-	lw t4, 44($fp)		# 44($fp) == a1: Caracter a guardar en buffer
-	sb t4, 0(t3)		# Guardo el caracter leido
+	lw 	t4, 44($fp)		# 44($fp) == a1: Caracter a guardar en buffer
+	sb 	t4, 0(t3)		# Guardo el caracter leido
 
 	############## AVANCE DE OFFSET #############
-	lw t1, offset_procesamiento
-	add t1, t1, 1
-	sw t1, offset_procesamiento
+	lw 	t1, offset_procesamiento
+	add 	t1, t1, 1
+	sw 	t1, offset_procesamiento
 
 	############## FIN putchProcesamiento #############
-fin:	li v0, 1	# En caso de exito devuelvo 1
+fin:	li 	v0, 1	# En caso de exito devuelvo 1
 	# restauro callee-saved regs
 	lw	gp, 24(sp)
 	lw	$fp, 28(sp)

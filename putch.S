@@ -13,7 +13,7 @@
 
 putch:
 	#debugging info: descripcion del stack frame
-	.frame $fp, 40, ra		# ver que a lo mejor 40 no es un buen numero
+	.frame $fp, 32, ra		# ver que a lo mejor 40 no es un buen numero
 
 	#bloque para codigo pic
 	.set noreorder
@@ -21,38 +21,38 @@ putch:
 	.set reorder
 
 	#creo stack frame
-	subu	sp, sp, 40
+	subu	sp, sp, 32
 
 	#bloque para codigo pic
-	.cprestore 24
+	.cprestore 16
 
 	# salvando el callee
-	sw	$fp, 28(sp)
-	sw	ra, 32(sp)
+	sw	$fp, 20(sp)
+	sw	ra, 24(sp)
 
-	move $fp, sp
+	move 	$fp, sp
 
 	####################### STACK FRAME ######################
+	# En base a mipsabi.pdf pagina 27, tomamos a las syscalls
+	# como funciones ordinarias. Por lo que necesitamos
+	# reservar ra en el SRA y crear el ABA del callee.
+
 	#	+---------------+
-	# 52	|		|	\
+	# 44	|		|	\
 	#	+---------------+	|
-	# 48	|		|	|
+	# 40	|		|	|
 	#	+---------------+	|	ABA CALLER
-	# 44	|	a1	|	|
+	# 36	|	a1	|	|
 	#	+---------------+	|
-	# 40	|	a0	|	/
+	# 32	|	a0	|	/
 	# 	+---------------+
-	# 36	|	s0	|	\
+	# 28	|	s0	|	\
 	# 	+---------------+	|
-	# 32	|	ra	|	|
+	# 24	|	ra	|	|
 	# 	+---------------+	|	SRA
-	# 28	|	fp	|	|
+	# 20	|	fp	|	|
 	# 	+---------------+	|
-	# 24	|	gp	|	/
-	# 	+---------------+
-	# 20	|		|	\
-	# 	+---------------+	|	LTA
-	# 16	|		|	/
+	# 16	|	gp	|	/
 	# 	+---------------+
 	# 12	|		|	\
 	# 	+---------------+	|
@@ -64,12 +64,15 @@ putch:
 	# 	+---------------+
 
 	###################### DESCRIPCION #######################
+	# Coloca un caracter en el buffer de salida. Si el buffer
+	# de salida se llena, dicho buffer se descarga a disco.
+	# Luego, se coloca el caracter en el buffer ya vacio.
 
-	sw	a0, 40($fp)	# a0: file desciptor de archivo de salida
-	sw	a1, 44($fp)	# a1: Caracter a guardar en archivo salida
+	sw	a0, 32($fp)	# a0: file desciptor de archivo de salida
+	sw	a1, 36($fp)	# a1: Caracter a guardar en archivo salida
 
 	# Reserva de registro s0
-	sw 	s0, 36($fp)
+	sw 	s0, 28($fp)
 
 	# RETORNO:
 	# Si ocurre un error fatal de escritura se devuelve un 0.
@@ -132,7 +135,7 @@ loop:	# Este loop se repite hasta que se pueda escribir la cantidad total
 
 	############ DESCARGO BUFFER EN DISCO ####################
 	li v0, SYS_write
-	lw a0, 40($fp)
+	lw a0, 32($fp)		#file desciptor de archivo de salida
 	lw a1, buffer_salida	#a1: Puntero donde guardar datos leidos.
 	move a2, s0		#obytes: cantidad de bytes a guardar
 	syscall
@@ -150,7 +153,9 @@ decrementar:
 	b loop						# leo la cantidad restante.
 
 nodecrementar:
-	sw zero, offset_salida #reseteo el offset.
+	# Vaciado logico del buffer de salida reseteando su
+	# puntero de escritura offset.
+	sw zero, offset_salida
 
 	li v0, 1	# En caso de exito devuelvo 1
 
@@ -161,14 +166,14 @@ error:	li v0, 0	# En caso de error devuelvo 0
 fin:
 
 	# Recupero registro s0
-	lw 	s0, 36($fp)
+	lw 	s0, 28($fp)
 
 	# restauro callee-saved regs
-	lw	gp, 24(sp)
-	lw	$fp, 28(sp)
-	lw	ra, 32(sp)
+	lw	gp, 16(sp)
+	lw	$fp, 20(sp)
+	lw	ra, 24(sp)
 	# destruyo stack frame
-	addu	sp, sp, 40
+	addu	sp, sp, 32
 	# vuelvo a funcion llamante
 	jr	ra
 

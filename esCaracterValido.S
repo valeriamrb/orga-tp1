@@ -19,7 +19,7 @@
 # 95 = 1011111
 esCaracterValido:
 	#debugging info: descripcion del stack frame
-	.frame $fp, 40, ra		# ver que a lo mejor 40 no es un buen numero
+	.frame $fp, 8, ra
 
 	#bloque para codigo pic
 	.set noreorder
@@ -27,49 +27,36 @@ esCaracterValido:
 	.set reorder
 
 	#creo stack frame
-	subu	sp, sp, 40
+	subu	sp, sp, 8
 
 	#bloque para codigo pic
-	.cprestore 24
+	.cprestore 0
 
 	# salvando el callee
-	sw	$fp, 28(sp)
-	sw	ra, 32(sp)
+	sw	$fp, 4(sp)
 
 	move 	$fp, sp
 
-	sw	a0, 40($fp)
+	sw	a0, 8($fp)
 
 	####################### STACK FRAME ######################
-	#	+---------------+
-	# 52	|		|	\
-	#	+---------------+	|
-	# 48	|		|	|
-	#	+---------------+	|	ABA CALLER
-	# 44	|		|	|
-	#	+---------------+	|
-	# 40	|	a0	|	/
+
 	# 	+---------------+
-	# 36	|		|	\
-	# 	+---------------+	|
-	# 32	|	ra	|	|
-	# 	+---------------+	|	SRA
-	# 28	|	fp	|	|
-	# 	+---------------+	|
-	# 24	|	gp	|	/
+	# 08	|	a0	|	|	ABA CALLER
 	# 	+---------------+
-	# 20	|		|	\
-	# 	+---------------+	|	LTA
-	# 16	|		|	/
+	# 04	|	fp	|	\
+	# 	+---------------+	|	SRA CALLEE
+	# 00	|	gp	|	/
 	# 	+---------------+
-	# 12	|		|	\
-	# 	+---------------+	|
-	# 08	|		|	|
-	# 	+---------------+	|	ABA CALLEE
-	# 04	|		|	|
-	# 	+---------------+	|
-	# 00	|		|	/
-	# 	+---------------+
+
+	##################### DESCRIPCION #######################
+	# Determina si el caracter recibido por a0 es valido
+
+	# Variables locales:
+	# a0: Caracter a analizar.
+
+	# RETORNO:
+	# 1 si es valido, o si es invalido
 
 	#################### PSEUDOCODIGO ###########################
 	##	if ((minuscula > 96 && minuscula < 123) ||
@@ -119,8 +106,8 @@ ValidarGuiones:
 
 	beq a0, t6, esValido
 
-
-	#Si paso por todas las validaciones sin saltar a es Valido devuelvo 0
+	# Si a traves de todas las validaciones sin saltar a "esValido"
+	# significa que el caracter es invalido y devuelvo un 0.
 	li v0, 0
 	j fin
 
@@ -130,11 +117,10 @@ esValido:
 		####################### FIN ESCARACTERVALIDO #####################
 fin:
 	# restauro callee-saved regs
-	lw	gp, 24(sp)
-	lw	$fp, 28(sp)
-	lw	ra, 32(sp)
+	lw	gp, 0(sp)
+	lw	$fp, 4(sp)
 	# destruyo stack frame
-	addu	sp, sp, 40
+	addu	sp, sp, 8
 	# vuelvo a funcion llamante
 	jr	ra
 

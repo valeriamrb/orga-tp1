@@ -3,6 +3,9 @@
 #include <mips/regdef.h>
 #include <sys/syscall.h>
 
+#define GETCH_EOF 256
+#define GETCH_ERROR 257
+
 .text
 
 .abicalls
@@ -112,12 +115,12 @@ palindrome:
 	##			// entrada
 	##			while (true) {
 	##				v0 = getch()    // Leo caracter en v0
-	##				if(v0 == 257) { // Verifico error
+	##				if(v0 == GETCH_ERROR) { // Verifico error
 	##					s0 = 0	// Error en getch()
 	##					break
 	##				}
 	##
-	##				if(v0 == 256) // Verifico EOF
+	##				if(v0 == GETCH_EOF) // Verifico EOF
 	##					break
 	##
 	##				// Si el caracter es valido lo guardo
@@ -247,18 +250,18 @@ loop:
 	jal 	getch		#Recibo caracter leido en v0
 
 	################ COMPRUEBO ERROR DE GETCH #################
-	# Si v0 == 257 => Hubo un error de lectura en getch.
-	li 	t2, 257
+	# Si v0 == GETCH_ERROR => Hubo un error de lectura en getch.
+	li 	t2, GETCH_ERROR
 	beq 	v0, t2, error
 
 	# Backapeo el caracter que recibi en 16($fp)
 	sw 	v0, 16($fp)		#16($fp): Caracter leido
 
 	################ CONTROLO FIN DE ARCHIVO ##################
-	# Si v0 == 256 entonces se acabo el archivo. Pero antes de finalizar
+	# Si v0 == GETCH_EOF entonces se acabo el archivo. Pero antes de finalizar
 	# el programa tengo que verificar si quedo una ultima palabra
 	# pendiente de procesar en el buffer de procesamiento.
-	li 	t1, 256
+	li 	t1, GETCH_EOF
 	beq	v0, t1, ultimaPalabra
 
 	########### VERIFICO SI EL CARACTER ES VALIDO ############
